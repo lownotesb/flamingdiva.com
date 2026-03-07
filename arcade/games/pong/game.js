@@ -204,39 +204,5 @@ function draw() {
 	}
 }
 
-function intro() {
-	var playButton = document.getElementById('playButton');
-	playButton.onclick = function() {
-		document.getElementById('titleScreen').style.display = "none";
-		document.getElementById('playScreen').style.display = "block";
-		init();
-	}
-
-	var pauseButton = document.getElementById('pauseButton');
-	pauseButton.onclick = function() {
-		if (!game.pause) {
-			game.pause = true;
-			this.innerHTML = "Continue";
-			document.getElementById('pauseText').style.display = "block";
-		}
-		else {
-			game.pause = false;
-			this.innerHTML = "Pause";
-			document.getElementById('pauseText').style.display = "none";
-		}
-	}
-
-	var soundButton = document.getElementById('soundButton');
-	soundButton.onclick = function() {
-		if (!game.sound) {
-			game.sound = true;
-			this.innerHTML = "Turn off sound";
-		}
-		else {
-			game.sound = false;
-			this.innerHTML = "Turn on sound";
-		}
-	}
-}
-
-intro();
+document.getElementById('playScreen').style.display = "block";
+init();
