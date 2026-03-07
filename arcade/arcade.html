@@ -18,6 +18,11 @@
       opacity: 0;
       transition: opacity 0.8s ease;
     }
+
+    /* Hide plasma background UI controls on arcade page */
+    #fd-shader-tune-btn,
+    #fd-shader-open-btn,
+    #fd-shader-switcher { display: none !important; }
     body.fd-ready { opacity: 1; }
 
     /* ── Header ── */
@@ -93,6 +98,7 @@
     /* ── Game Grid ── */
     .game-grid {
       display: flex;
+      flex-wrap: wrap;
       gap: 24px;
     }
 
@@ -196,16 +202,19 @@
       backdrop-filter: blur(20px);
       z-index: 3;
     }
-    .dock-info { display: flex; align-items: center; gap: 28px; }
-    .dock-stat { display: flex; flex-direction: column; gap: 6px; }
+    .dock-info { display: flex; align-items: center; gap: 28px; min-width: 0; overflow: hidden; }
+    .dock-stat { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
     .dock-stat-label { font-size: 10px; color: #6b7a99; letter-spacing: 0.14em; }
     .dock-stat-value {
       font-family: 'Press Start 2P', monospace;
       font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .dock-divider { width: 1px; height: 48px; background: #1e1e38; }
 
-    .dock-right { display: flex; align-items: center; gap: 20px; }
+    .dock-right { display: flex; align-items: center; gap: 20px; flex-shrink: 0; }
     .controls-hint { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
     .controls-hint .label { font-size: 9px; color: #6b7a99; letter-spacing: 0.1em; }
     .controls-hint .keys { font-family: 'VT323', monospace; font-size: 16px; color: #6b7a99; }
