@@ -1,0 +1,6 @@
+{% if isBuilder and not content.content.disable_builder_label %}
+  <div style="padding: 20px; background: repeating-linear-gradient(145deg, #eff6ff, #eff6ff 10px, #d8e3f9 10px, #d8e3f9 20px); width: 100%; color: black; font-weight: bold;">
+    {{ content.content.builder_label | default('HTML Code') }}
+  </div>
+{% endif %}
+{{ content.content.html_code }}

@@ -1,0 +1,23 @@
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Archives & downloads (store elsewhere)
+*.zip
+*.tar.gz
+downloads/
+artwork/
+
+# Logs & temp
+*.log
+*.tmp
+
+# Node (if ever added)
+node_modules/

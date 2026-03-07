@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Air Hockey</title>
+<style>
+ * { padding: 0; margin: 0; box-sizing: border-box; }
+ body { background: #111; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
+ canvas { background: #eee; display: block; transform-origin: center center; }
+</style>
+</head>
+<body>
+	<canvas id="canvas" width="520" height="660"></canvas>
+	<script>
+ var canvas = document.getElementById('canvas');
+ ctx = canvas.getContext('2d');
+ var gm = true;
+ var ball_speed = 10;
+ var xspeed = 0;
+ var yspeed = 0;
+ var com_score = 0;
+ var player_score = 0;
+ var x_min=30;
+ var x_max=460;
+ var y_min=30;
+ var y_max=600;
+
+ document.addEventListener("mousemove", mouseMoveHandler, false);
+
+ // Scale canvas to fill the window, preserving aspect ratio
+ function resizeCanvas() {
+   var scale = Math.min(window.innerWidth / canvas.width, window.innerHeight / canvas.height);
+   canvas.style.transform = 'scale(' + scale + ')';
+ }
+ resizeCanvas();
+ window.addEventListener('resize', resizeCanvas);
+
+
+ function draw_rect(x,y,w,h,b)
+ {
+ ctx.beginPath();
+ if(b)
+ {
+ ctx.strokeStyle = "#151B54";
+ ctx.lineWidth = 40;
+ }
+ else
+ {
+ ctx.strokeStyle = "#1589FF";
+ ctx.lineWidth = 4;
+ }
+ ctx.strokeRect(x,y,w,h);
+ ctx.closePath();
+ }
+
+ function draw_goal(x,y,r,s)
+ {
+ ctx.beginPath();
+ ctx.lineWidth=4;
+ if(s)
+ ctx.arc(x, y, r, 0, Math.PI, false);
+ else
+ ctx.arc(x, y, r, Math.PI, 0, false);
+
+ ctx.strokeStyle = "#1589FF";
+ ctx.stroke();
+ ctx.closePath();
+ }
+
+ function draw_circle(x,y,r,w)
+ {
+ ctx.beginPath();
+ ctx.lineWidth=w;
+ ctx.arc(x, y, r, 0, Math.PI*2, false);
+ ctx.strokeStyle = "#1589FF";
+ ctx.stroke();
+ ctx.closePath();
+ }
+
+ function draw_filled_circle(x,y,r,d)
+ {
+ ctx.beginPath();
+ ctx.arc(x, y, r, 0, Math.PI*2);
+ if(d==1)
+ {
+ ctx.fillStyle = "#F87217";
+ ctx.strokeStyle = "#9F000F";
+ }
+ else if(d==2)
+ {
+ ctx.fillStyle = "#ffdc00";
+ ctx.strokeStyle = "#9F000F";
+ }
+ else
+ {
+ ctx.fillStyle = "#7D0552";
+ ctx.strokeStyle = "#4CC417";
+ }
+
+ ctx.fill();
+ ctx.lineWidth = 3;
+
+ ctx.stroke();
+ ctx.closePath();
+ }
+
+ function draw_board()
+ {
+ draw_rect(0,0,520,660,1);
+ draw_rect(30,30,460,600,0);
+ draw_goal(260,30,70,1);
+ draw_goal(260,30,150,1);
+ draw_goal(260,630,70,0);
+ draw_goal(260,630,150,0);
+ draw_circle(260,330,40,4);
+ draw_circle(260,330,5,4);
+
+ ctx.beginPath();
+ ctx.moveTo(30, 330);
+ ctx.lineTo(490, 330);
+ ctx.stroke();
+ ctx.closePath();
+
+ ctx.beginPath();
+ ctx.moveTo(190, 30);
+ ctx.lineTo(330, 30);
+ ctx.lineWidth = 4;
+ ctx.strokeStyle = "#000";
+ ctx.stroke();
+ ctx.closePath();
+
+ ctx.beginPath();
+ ctx.moveTo(190, 630);
+ ctx.lineTo(330, 630);
+ ctx.stroke();
+ ctx.closePath();
+
+ ctx.font = "50px monospace";
+ ctx.lineWidth = 2;
+ ctx.strokeStyle = "#333";
+ ctx.strokeText(com_score,440,300);
+ ctx.strokeText(player_score,440,380);
+ }
+
+ function distance(x1,y1,x2,y2)
+ {
+ var tempx = x2-x1;
+ var tempy = y2-y1;
+ tempx*=tempx;
+ tempy*=tempy;
+ return Math.sqrt(tempx+tempy);
+ }
+
+
+ var Mallet = function(x,y,r)
+ {
+ this.x = x;
+ this.y = y;
+ this.radius = r;
+ }
+ var pMallet = new Mallet(260,canvas.height-100,30);
+ var cMallet = new Mallet(260,100,30);
+
+ var Ball = function (x,y,r) {
+ this.x = x;
+ this.y = y;
+ this.radius = r;
+ }
+ var ball = new Ball(canvas.width/2,canvas.height-200,15);
+
+ function mouseMoveHandler(e) {
+ var rect = canvas.getBoundingClientRect();
+ // rect.width is the rendered (scaled) size; divide to get canvas-space coords
+ var relativeX = (e.clientX - rect.left) * (canvas.width  / rect.width);
+ var relativeY = (e.clientY - rect.top)  * (canvas.height / rect.height);
+
+ if(relativeX > 60 && relativeX < canvas.width-60) {
+ pMallet.x = relativeX;
+ }
+ if(relativeY > 0 && relativeY < 600){
+ pMallet.y = relativeY;
+ }
+ }
+
+
+ function play()
+ {
+ ctx.clearRect(0, 0, canvas.width, canvas.height);
+ draw_board();
+ draw_filled_circle(pMallet.x,pMallet.y,pMallet.radius,1);
+ draw_filled_circle(cMallet.x,cMallet.y,cMallet.radius,2);
+ draw_filled_circle(ball.x,ball.y,ball.radius,0);
+
+ if(ball.x + xspeed > canvas.width-ball.radius-30 || ball.x + xspeed < ball.radius + 30) {
+ xspeed *= -1;
+ }
+
+ if(ball.x>190 && ball.x<330){
+ if(ball.y + yspeed > canvas.height+ball.radius-30){
+ ball.x = canvas.width/2;
+ ball.y = canvas.height/2+100;
+ xspeed = 0;
+ yspeed = 0 ;
+ com_score = com_score + 1;
+ }
+ else if(ball.y + yspeed < 30-ball.radius ){
+ ball.x = canvas.width/2;
+ ball.y = canvas.height/2-100;
+ xspeed = 0;
+ yspeed = 0;
+ player_score = player_score + 1;
+ }
+ }
+ else{
+ if(ball.y + yspeed > canvas.height-ball.radius-30 || ball.y + yspeed < 30+ball.radius){
+ yspeed *= -1;
+ }
+ }
+
+ var ed = false;
+ var er = 1;
+ var p2s;
+ if(ed){er=5;}
+
+ if((Math.abs(xspeed)+Math.abs(yspeed))<10&&ball.y<=canvas.height/2){
+ if(ball.y-20>cMallet.y){
+ cMallet.y+=2;
+ }
+ else{
+ cMallet.y-=2;
+ }
+ }
+ else if(cMallet.y>100){
+ cMallet.y-=2;
+ }
+ else if(cMallet.y<100){
+ cMallet.y+=2;
+ }
+
+ if(cMallet.x<x_min)
+ {cMallet.x=x_min+30;}
+ if(cMallet.x>x_max)
+ {cMallet.x=x_max+30;}
+ if(cMallet.y<y_min)
+ {cMallet.y=y_min+60;}
+ if(cMallet.y>y_max)
+ {cMallet.y=y_max;}
+
+ if(!ed){p2s = 2;}
+ else{p2s=3;}
+
+ if(ball.y<cMallet.y&&ball.x>cMallet.x-30&&ball.x<cMallet.x+30){p2s = -2;}
+ if(cMallet.x<ball.x+er){cMallet.x+=p2s;}if(cMallet.x>ball.x-er){cMallet.x-=p2s;}
+
+ var pDist = distance(pMallet.x,pMallet.y,ball.x,ball.y);
+ var cDist = distance(cMallet.x,cMallet.y,ball.x,ball.y);
+
+ if(pDist<45)
+ {
+ var dx = ball.x - pMallet.x;
+ var dy = ball.y - pMallet.y;
+ dx/=30;
+ dy/=30;
+ xspeed = dx*ball_speed;
+ yspeed = dy*ball_speed;
+ }
+
+ if(cDist<45)
+ {
+ var cdx = ball.x - cMallet.x;
+ var cdy = ball.y- cMallet.y;
+ cdx/=45;
+ cdy/=45;
+ xspeed = cdx*ball_speed;
+ yspeed = cdy*ball_speed;
+ }
+
+ ball.x += xspeed;
+ ball.y += yspeed;
+
+ xspeed *=0.99;
+ yspeed *=0.99;
+ }
+
+ setInterval(play,10);
+	</script>
+</body>
+</html>

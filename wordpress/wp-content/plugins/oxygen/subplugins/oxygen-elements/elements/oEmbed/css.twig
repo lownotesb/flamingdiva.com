@@ -1,0 +1,21 @@
+{% if design.oembed.force_iframe_aspect_ratio %}
+
+  %%SELECTOR%%:has(iframe) {
+    display: flex;
+    position: relative;
+    width: 100%;
+    padding-top: calc(100% * ({{ design.oembed.height|default(9) }}/{{ design.oembed.width|default(16) }}));
+  }
+
+  %%SELECTOR%% iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+{% endif %}

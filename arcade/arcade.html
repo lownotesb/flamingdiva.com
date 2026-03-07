@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flaming Diva — Arcade</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&family=VT323&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #06000E;
+      color: #e8e8f0;
+      font-family: 'Silkscreen', monospace;
+      height: 100vh;
+      overflow: hidden;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+    body.fd-ready { opacity: 1; }
+
+    /* ── Header ── */
+    header {
+      height: 64px;
+      border-bottom: 1px solid rgba(0,229,255,0.15);
+      background: rgba(6,0,14,0.82);
+      backdrop-filter: blur(20px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      position: relative;
+      z-index: 3;
+    }
+    .logo {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 18px;
+      color: #00e5ff;
+      text-shadow: 0 0 12px #00e5ff, 0 0 28px rgba(0,229,255,0.4);
+    }
+    .header-stats {
+      display: flex;
+      gap: 32px;
+      align-items: center;
+    }
+    .stat { display: flex; align-items: center; gap: 10px; }
+    .stat-label { font-size: 10px; color: #6b7a99; letter-spacing: 0.12em; }
+    .stat-value {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 13px;
+    }
+    .stat-value.yellow { color: #ffd600; text-shadow: 0 0 8px #ffd600; }
+    .stat-value.pink   { color: #ff2d78; text-shadow: 0 0 8px #ff2d78; }
+
+    /* ── Main ── */
+    main {
+      padding: 28px 40px 0;
+      position: relative;
+      z-index: 3;
+    }
+
+    /* ── Back link ── */
+    .back-link {
+      font-family: 'Rubik', sans-serif;
+      font-size: 10px; font-weight: 300;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: rgba(255,255,255,0.55);
+      background: none; border: none;
+      cursor: pointer; padding: 0;
+      display: flex; align-items: center; gap: 8px;
+      transition: color 0.2s ease;
+    }
+    .back-link:hover { color: rgba(255,255,255,0.9); }
+    .back-link::before { content: '←'; font-size: 14px; margin-right: 2px; }
+    .section-label {
+      font-size: 10px;
+      color: #00e5ff;
+      letter-spacing: 0.2em;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .section-label::after {
+      content: '';
+      display: block;
+      width: 200px;
+      height: 1px;
+      background: linear-gradient(90deg, #00e5ff44, transparent);
+    }
+
+    /* ── Game Grid ── */
+    .game-grid {
+      display: flex;
+      gap: 24px;
+    }
+
+    .game-card {
+      width: 280px;
+      background: rgba(6,0,14,0.72);
+      backdrop-filter: blur(12px);
+      border: 1.5px solid rgba(255,255,255,0.08);
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      opacity: 0.55;
+      flex-shrink: 0;
+    }
+    .game-card.active, .game-card:hover {
+      border-color: rgba(0,229,255,0.5);
+      box-shadow: 0 0 24px rgba(255,56,0,0.25), 0 0 48px rgba(0,229,255,0.1);
+      opacity: 1;
+    }
+    .game-card.active { opacity: 1; }
+
+    .card-preview {
+      width: 100%;
+      height: 190px;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .card-preview .stars {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(1px 1px at 15% 25%, #fff, transparent),
+        radial-gradient(1px 1px at 65% 12%, #fff, transparent),
+        radial-gradient(1px 1px at 82% 58%, #adf, transparent),
+        radial-gradient(1px 1px at 8%  72%, #fff, transparent),
+        radial-gradient(1px 1px at 42% 82%, #ddf, transparent),
+        radial-gradient(1px 1px at 91% 22%, #fff, transparent),
+        radial-gradient(1px 1px at 33% 50%, #fff, transparent),
+        radial-gradient(2px 2px at 72% 42%, #aef, transparent),
+        radial-gradient(1px 1px at 55% 88%, #fff, transparent);
+      opacity: 0.7;
+    }
+    .card-preview svg { position: relative; z-index: 1; }
+    .card-preview .coming-soon {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 9px;
+      color: #1e2638;
+      text-align: center;
+      line-height: 2.2;
+    }
+
+    .card-info { padding: 16px 18px; }
+    .card-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .card-title {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 10px;
+      color: #e8e8f0;
+    }
+    .card-badge {
+      font-size: 9px;
+      color: #39ff14;
+      background: rgba(57,255,20,0.1);
+      padding: 2px 7px;
+      border: 1px solid rgba(57,255,20,0.3);
+    }
+    .card-desc {
+      font-family: 'VT323', monospace;
+      font-size: 16px;
+      color: #6b7a99;
+      line-height: 1.3;
+      margin-bottom: 10px;
+    }
+    .card-tags { display: flex; gap: 6px; }
+    .tag {
+      font-size: 9px;
+      padding: 2px 7px;
+      border: 1px solid;
+    }
+    .tag.cyan  { color: #00e5ff; border-color: rgba(0,229,255,0.3); background: rgba(0,229,255,0.06); }
+    .tag.dim   { color: #3a3a58; border-color: #2a2a40; }
+
+    /* ── Launch Dock ── */
+    .launch-dock {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: 120px;
+      background: rgba(6,0,14,0.88);
+      border-top: 1px solid rgba(0,229,255,0.12);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      backdrop-filter: blur(20px);
+      z-index: 3;
+    }
+    .dock-info { display: flex; align-items: center; gap: 28px; }
+    .dock-stat { display: flex; flex-direction: column; gap: 6px; }
+    .dock-stat-label { font-size: 10px; color: #6b7a99; letter-spacing: 0.14em; }
+    .dock-stat-value {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 14px;
+    }
+    .dock-divider { width: 1px; height: 48px; background: #1e1e38; }
+
+    .dock-right { display: flex; align-items: center; gap: 20px; }
+    .controls-hint { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+    .controls-hint .label { font-size: 9px; color: #6b7a99; letter-spacing: 0.1em; }
+    .controls-hint .keys { font-family: 'VT323', monospace; font-size: 16px; color: #6b7a99; }
+
+    .find-diva-btn {
+      height: 56px;
+      padding: 0 44px;
+      background: linear-gradient(90deg, #FF3800, #FF006B, #9400FF);
+      border: none;
+      cursor: pointer;
+      font-family: 'Rubik', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #fff;
+      transition: filter 0.2s ease, transform 0.1s ease;
+    }
+    .find-diva-btn:hover { filter: brightness(1.2); transform: translateY(-2px); }
+    .find-diva-btn:active { transform: translateY(1px); }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      display: flex;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.88);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-overlay.fullscreen { background: #000; }
+    .modal-overlay.fullscreen .modal {
+      width: 100vw;
+      height: 100vh;
+      border: none;
+      box-shadow: none;
+    }
+    .modal-overlay.fullscreen iframe {
+      flex: 1;          /* fills 100vh minus the 48px header */
+      width: 100% !important;
+      min-height: 0;    /* allows flex child to shrink below content size */
+    }
+
+    @keyframes modalIn {
+      from { transform: scale(0);   opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+    @keyframes modalOut {
+      from { transform: scale(1);   opacity: 1; }
+      to   { transform: scale(0);   opacity: 0; }
+    }
+
+    .modal {
+      background: rgba(6,0,14,0.95);
+      border: 1.5px solid rgba(0,229,255,0.5);
+      box-shadow: 0 0 40px rgba(0,229,255,0.2), 0 0 80px rgba(255,56,0,0.08);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transform: scale(0);
+      opacity: 0;
+    }
+    .modal-overlay.open .modal {
+      animation: modalIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+    .modal-overlay.closing .modal {
+      animation: modalOut 0.25s cubic-bezier(0.55, 0, 0.45, 1) forwards;
+    }
+    .modal-header {
+      height: 48px;
+      background: rgba(0,0,0,0.5);
+      border-bottom: 1px solid #00e5ff33;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      flex-shrink: 0;
+    }
+    .modal-title {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 11px;
+      color: #00e5ff;
+      text-shadow: 0 0 8px #00e5ff;
+    }
+    .modal-close {
+      background: none;
+      border: 1px solid #ff2d7844;
+      color: #ff2d78;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 9px;
+      padding: 6px 12px;
+      cursor: pointer;
+      letter-spacing: 0.08em;
+      transition: background 0.15s;
+    }
+    .modal-close:hover { background: rgba(255,45,120,0.15); }
+
+    .modal iframe {
+      border: none;
+      display: block;
+    }
+
+    /* ── Player System ── */
+    .ps-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.92);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .ps-overlay.open { opacity: 1; pointer-events: auto; }
+
+    .ps-box {
+      background: rgba(6,0,14,0.95);
+      border: 1.5px solid rgba(0,229,255,0.4);
+      box-shadow: 0 0 40px rgba(0,229,255,0.15), 0 0 80px rgba(255,56,0,0.08);
+      padding: 44px 48px;
+      min-width: 400px;
+      display: flex; flex-direction: column; align-items: center; gap: 28px;
+    }
+    .ps-title {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 14px; color: #00e5ff;
+      text-shadow: 0 0 12px #00e5ff; text-align: center;
+    }
+    .ps-sub { font-family: 'VT323', monospace; font-size: 20px; color: #6b7a99; text-align: center; }
+
+    /* Letter wheel */
+    .wheel-cols { display: flex; gap: 14px; }
+    .wheel-col  { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .wheel-btn  {
+      background: none; border: 1px solid #00e5ff33; color: #00e5ff;
+      width: 56px; height: 34px; font-size: 14px; cursor: pointer;
+      font-family: 'Silkscreen', monospace;
+      transition: background 0.1s, border-color 0.1s;
+    }
+    .wheel-btn:hover { background: rgba(0,229,255,0.1); border-color: #00e5ff88; }
+    .wheel-letter {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 34px; color: #e8e8f0;
+      width: 56px; height: 60px;
+      display: flex; align-items: center; justify-content: center;
+      border: 2px solid #2a2a40;
+      background: rgba(255,255,255,0.03);
+      transition: border-color 0.15s, box-shadow 0.15s, color 0.15s;
+    }
+    .wheel-col.active .wheel-letter {
+      border-color: #00e5ff;
+      box-shadow: 0 0 18px rgba(0,229,255,0.35);
+      color: #fff;
+    }
+
+    /* Existing players */
+    .ps-existing {
+      display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%;
+    }
+    .ps-existing-label { font-size: 9px; color: #6b7a99; letter-spacing: 0.15em; }
+    .ps-existing-players { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+    .player-pill {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 10px; color: #ffd600;
+      background: rgba(255,214,0,0.06); border: 1px solid rgba(255,214,0,0.25);
+      padding: 7px 16px; cursor: pointer; transition: background 0.1s;
+    }
+    .player-pill:hover { background: rgba(255,214,0,0.16); }
+
+    /* PS action buttons */
+    .ps-actions { display: flex; gap: 12px; }
+    .ps-btn-primary {
+      font-family: 'Press Start 2P', monospace; font-size: 10px; color: #000;
+      background: #00e5ff; border: none; padding: 13px 30px; cursor: pointer;
+      box-shadow: 0 0 18px rgba(0,229,255,0.4); transition: box-shadow 0.1s;
+    }
+    .ps-btn-primary:hover { box-shadow: 0 0 30px rgba(0,229,255,0.7); }
+    .ps-btn-ghost {
+      font-family: 'Press Start 2P', monospace; font-size: 10px; color: #6b7a99;
+      background: none; border: 1px solid #2a2a40; padding: 13px 22px; cursor: pointer;
+      transition: color 0.1s, border-color 0.1s;
+    }
+    .ps-btn-ghost:hover { color: #e8e8f0; border-color: #6b7a99; }
+
+    /* Score submit */
+    .score-game-title {
+      font-family: 'Press Start 2P', monospace; font-size: 11px;
+      color: #ffd600; text-shadow: 0 0 8px #ffd600;
+    }
+    .score-input {
+      font-family: 'Press Start 2P', monospace; font-size: 26px; color: #fff;
+      background: #0a0a1e; border: 2px solid #00e5ff44;
+      padding: 14px 22px; width: 220px; text-align: center; outline: none;
+      -moz-appearance: textfield;
+    }
+    .score-input::-webkit-outer-spin-button,
+    .score-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .score-input:focus { border-color: #00e5ff; box-shadow: 0 0 14px rgba(0,229,255,0.3); }
+
+    /* Leaderboard */
+    .lb-box { min-width: 500px; max-height: 78vh; overflow-y: auto; }
+    .lb-header-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+    .lb-game-block { width: 100%; margin-bottom: 18px; }
+    .lb-game-name {
+      font-family: 'Press Start 2P', monospace; font-size: 8px;
+      color: #00e5ff; letter-spacing: 0.1em;
+      padding: 10px 0 8px; border-bottom: 1px solid #1e1e38; margin-bottom: 6px;
+    }
+    .lb-row { display: flex; align-items: center; padding: 5px 0; gap: 14px; }
+    .lb-rank  { font-size: 10px; color: #3a3a58; width: 22px; flex-shrink: 0; }
+    .lb-initials { font-family: 'Press Start 2P', monospace; font-size: 11px; flex: 1; }
+    .lb-score    { font-family: 'Press Start 2P', monospace; font-size: 11px; color: #ffd600; }
+    .lb-rank-1 .lb-initials { color: #ffd600; }
+    .lb-rank-2 .lb-initials { color: #c0c0c0; }
+    .lb-rank-3 .lb-initials { color: #cd7f32; }
+    .lb-empty { font-family: 'VT323', monospace; font-size: 16px; color: #2a2a40; padding: 6px 0; }
+
+    /* Header player chip */
+    .player-chip {
+      display: flex; flex-direction: column; gap: 4px;
+      background: none; border: 1px solid rgba(255,214,0,0.2);
+      padding: 6px 14px; cursor: pointer; transition: border-color 0.15s;
+    }
+    .player-chip:hover { border-color: rgba(255,214,0,0.6); }
+    .player-chip .chip-label { font-size: 9px; color: #6b7a99; letter-spacing: 0.12em; }
+    .player-chip .chip-value {
+      font-family: 'Press Start 2P', monospace; font-size: 11px;
+      color: #ffd600; text-shadow: 0 0 8px #ffd600;
+    }
+    .lb-open-btn {
+      font-family: 'Press Start 2P', monospace; font-size: 9px; color: #00e5ff;
+      background: none; border: 1px solid #00e5ff33;
+      padding: 8px 16px; cursor: pointer; transition: border-color 0.15s, background 0.15s;
+    }
+    .lb-open-btn:hover { border-color: #00e5ff; background: rgba(0,229,255,0.06); }
+
+    /* Card scores */
+    .card-scores { padding: 0 18px 14px; display: flex; gap: 10px; flex-wrap: wrap; min-height: 0; }
+    .score-entry { font-family: 'Press Start 2P', monospace; font-size: 7px; color: #ffd600; opacity: 0.85; }
+  </style>
+</head>
+<body>
+<script src="../shared/plasma-bg.js"></script>
+
+  <!-- Header -->
+  <header>
+    <div style="display:flex;align-items:center;gap:28px;">
+      <button class="back-link" id="back-btn">flamingdiva</button>
+      <div class="logo">ARCADE</div>
+    </div>
+    <div class="header-stats">
+      <div class="stat">
+        <span class="stat-label">CREDITS</span>
+        <span class="stat-value yellow">99</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">HI-SCORE</span>
+        <span class="stat-value pink" id="header-hiscore">—</span>
+      </div>
+      <button class="player-chip" id="player-chip" onclick="showWheelModal()">
+        <span class="chip-label">PLAYER</span>
+        <span class="chip-value" id="header-player">INSERT COIN</span>
+      </button>
+      <button class="lb-open-btn" onclick="showLeaderboard()">SCORES</button>
+    </div>
+  </header>
+
+  <!-- Game Grid -->
+  <main>
+    <div class="section-label">SELECT YOUR GAME</div>
+    <div class="game-grid">
+
+      <div class="game-card active" data-game="asteroids" onclick="launchGame(this)">
+        <div class="card-preview">
+          <div class="stars"></div>
+          <svg width="36" height="44" viewBox="0 0 36 44">
+            <polygon points="18,2 34,40 18,32 2,40" fill="none" stroke="#00e5ff" stroke-width="2" filter="url(#glow)"/>
+            <defs>
+              <filter id="glow"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            </defs>
+          </svg>
+          <svg width="52" height="52" viewBox="0 0 52 52" style="position:absolute;top:18px;right:22px">
+            <polygon points="26,2 44,10 50,28 38,48 14,48 4,30 10,10" fill="none" stroke="#8899cc" stroke-width="1.5"/>
+          </svg>
+          <svg width="28" height="28" viewBox="0 0 28 28" style="position:absolute;bottom:24px;left:18px">
+            <polygon points="14,2 24,8 26,18 18,26 6,24 2,14 6,6" fill="none" stroke="#6677aa" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <div class="card-info">
+          <div class="card-title-row">
+            <span class="card-title">ASTEROIDS</span>
+            <span class="card-badge">1P</span>
+          </div>
+          <div class="card-desc">Destroy asteroids, survive the void. Classic HTML5 arcade shooter.</div>
+          <div class="card-tags">
+            <span class="tag cyan">SHOOTER</span>
+            <span class="tag cyan">CLASSIC</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="game-card" data-game="missile-command" onclick="launchGame(this)">
+        <div class="card-preview" style="background:#000; position:relative; overflow:hidden;">
+          <!-- City skyline -->
+          <svg width="280" height="190" viewBox="0 0 280 190" style="position:absolute;inset:0;">
+            <!-- Ground -->
+            <rect x="0" y="165" width="280" height="4" fill="#4af"/>
+            <!-- Cities -->
+            <rect x="18" y="148" width="14" height="17" fill="#4af" opacity="0.7"/>
+            <rect x="34" y="152" width="10" height="13" fill="#4af" opacity="0.7"/>
+            <rect x="80" y="146" width="14" height="19" fill="#4af" opacity="0.7"/>
+            <rect x="96" y="150" width="10" height="15" fill="#4af" opacity="0.7"/>
+            <rect x="162" y="148" width="14" height="17" fill="#4af" opacity="0.7"/>
+            <rect x="178" y="153" width="10" height="12" fill="#4af" opacity="0.7"/>
+            <rect x="240" y="147" width="14" height="18" fill="#4af" opacity="0.7"/>
+            <rect x="256" y="151" width="10" height="14" fill="#4af" opacity="0.7"/>
+            <!-- Incoming missiles (diagonal lines) -->
+            <line x1="40" y1="10" x2="90" y2="155" stroke="#f44" stroke-width="1.5" opacity="0.8"/>
+            <line x1="180" y1="5" x2="170" y2="150" stroke="#f44" stroke-width="1.5" opacity="0.8"/>
+            <line x1="240" y1="8" x2="260" y2="152" stroke="#f44" stroke-width="1.5" opacity="0.6"/>
+            <!-- Explosion circles -->
+            <circle cx="130" cy="80" r="18" fill="none" stroke="#ff8c00" stroke-width="1.5" opacity="0.9"/>
+            <circle cx="130" cy="80" r="10" fill="none" stroke="#ffd700" stroke-width="1" opacity="0.7"/>
+            <!-- Counter missile trail -->
+            <line x1="140" y1="165" x2="130" y2="80" stroke="#fff" stroke-width="1" opacity="0.6" stroke-dasharray="4,3"/>
+          </svg>
+        </div>
+        <div class="card-info">
+          <div class="card-title-row">
+            <span class="card-title">MISSILE CMD</span>
+            <span class="card-badge">1P</span>
+          </div>
+          <div class="card-desc">Defend your cities. Click to fire counter-missiles.</div>
+          <div class="card-tags">
+            <span class="tag cyan">STRATEGY</span>
+            <span class="tag cyan">CLASSIC</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="game-card" data-game="pinball" onclick="launchGame(this)">
+        <div class="card-preview" style="background:#0a0010; position:relative; overflow:hidden;">
+          <svg width="280" height="190" viewBox="0 0 280 190" style="position:absolute;inset:0;">
+            <!-- Table outline -->
+            <rect x="90" y="8" width="100" height="174" rx="50" fill="none" stroke="#cc44ff" stroke-width="1.5" opacity="0.7"/>
+            <!-- Flippers -->
+            <line x1="105" y1="162" x2="135" y2="155" stroke="#ff44ff" stroke-width="3" stroke-linecap="round"/>
+            <line x1="175" y1="162" x2="145" y2="155" stroke="#ff44ff" stroke-width="3" stroke-linecap="round"/>
+            <!-- Ball -->
+            <circle cx="140" cy="100" r="5" fill="#fff" opacity="0.9"/>
+            <!-- Bumpers -->
+            <circle cx="125" cy="65" r="10" fill="none" stroke="#ffcc00" stroke-width="2" opacity="0.8"/>
+            <circle cx="155" cy="65" r="10" fill="none" stroke="#ff4488" stroke-width="2" opacity="0.8"/>
+            <circle cx="140" cy="45" r="10" fill="none" stroke="#44ffcc" stroke-width="2" opacity="0.8"/>
+            <!-- Bumper dots -->
+            <circle cx="125" cy="65" r="3" fill="#ffcc00" opacity="0.9"/>
+            <circle cx="155" cy="65" r="3" fill="#ff4488" opacity="0.9"/>
+            <circle cx="140" cy="45" r="3" fill="#44ffcc" opacity="0.9"/>
+            <!-- Ball trail -->
+            <line x1="140" y1="100" x2="155" y2="65" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+          </svg>
+        </div>
+        <div class="card-info">
+          <div class="card-title-row">
+            <span class="card-title">PINBALL</span>
+            <span class="card-badge">1P</span>
+          </div>
+          <div class="card-desc">Flutter I/O Pinball. Keep the ball alive, hit the bumpers.</div>
+          <div class="card-tags">
+            <span class="tag cyan">ARCADE</span>
+            <span class="tag cyan">ONLINE</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="game-card" data-game="pong" onclick="launchGame(this)">
+        <div class="card-preview" style="background:#150000; position:relative; overflow:hidden;">
+          <svg width="280" height="190" viewBox="0 0 280 190" style="position:absolute;inset:0;">
+            <!-- Center line dashes -->
+            <line x1="140" y1="0" x2="140" y2="190" stroke="#ffffff" stroke-width="2" stroke-dasharray="10,8" opacity="0.2"/>
+            <!-- Left paddle (CPU) -->
+            <rect x="22" y="65" width="6" height="60" rx="3" fill="#ffcc00" opacity="0.9"/>
+            <!-- Right paddle (Player) -->
+            <rect x="252" y="80" width="6" height="60" rx="3" fill="#00e5ff" opacity="0.9"/>
+            <!-- Ball -->
+            <circle cx="170" cy="95" r="6" fill="#ffffff" opacity="0.95"/>
+            <!-- Ball trail -->
+            <circle cx="155" cy="88" r="4" fill="#ffffff" opacity="0.3"/>
+            <circle cx="143" cy="82" r="2.5" fill="#ffffff" opacity="0.15"/>
+            <!-- Score -->
+            <text x="95" y="38" font-family="monospace" font-size="28" fill="#cccccc" opacity="0.5" text-anchor="middle">3</text>
+            <text x="185" y="38" font-family="monospace" font-size="28" fill="#cccccc" opacity="0.5" text-anchor="middle">5</text>
+          </svg>
+        </div>
+        <div class="card-info">
+          <div class="card-title-row">
+            <span class="card-title">PONG</span>
+            <span class="card-badge">1P</span>
+          </div>
+          <div class="card-desc">You vs CPU. Move your mouse to control the right paddle.</div>
+          <div class="card-tags">
+            <span class="tag cyan">SPORTS</span>
+            <span class="tag cyan">CLASSIC</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="game-card" data-game="hextris" onclick="launchGame(this)">
+        <div class="card-preview" style="background:#1a1a2e; position:relative; overflow:hidden;">
+          <svg width="280" height="190" viewBox="0 0 280 190" style="position:absolute;inset:0;">
+            <!-- Central hexagon -->
+            <polygon points="140,55 168,71 168,103 140,119 112,103 112,71" fill="none" stroke="#fff" stroke-width="2" opacity="0.9"/>
+            <!-- Orbiting blocks - ring 1 -->
+            <polygon points="140,30 152,37 152,51 140,58 128,51 128,37" fill="#e74c3c" opacity="0.9"/>
+            <polygon points="167,72 179,65 191,72 191,86 179,93 167,86" fill="#3498db" opacity="0.9"/>
+            <polygon points="167,103 179,96 191,103 191,117 179,124 167,117" fill="#2ecc71" opacity="0.9"/>
+            <polygon points="140,119 152,112 164,119 164,133 152,140 140,133" fill="#f39c12" opacity="0.9"/>
+            <polygon points="113,103 125,96 137,103 137,117 125,124 113,117" fill="#9b59b6" opacity="0.9"/>
+            <polygon points="89,72 101,65 113,72 113,86 101,93 89,86" fill="#1abc9c" opacity="0.9"/>
+            <!-- Ring 2 partial blocks (coming in) -->
+            <polygon points="140,5 152,12 152,26 140,33 128,26 128,12" fill="#e74c3c" opacity="0.4"/>
+            <polygon points="196,37 208,30 220,37 220,51 208,58 196,51" fill="#3498db" opacity="0.4"/>
+            <!-- Score text -->
+            <text x="140" y="92" font-family="monospace" font-size="13" fill="#fff" text-anchor="middle" opacity="0.7">1843</text>
+          </svg>
+        </div>
+        <div class="card-info">
+          <div class="card-title-row">
+            <span class="card-title">HEXTRIS</span>
+            <span class="card-badge">1P</span>
+          </div>
+          <div class="card-desc">Rotate the hex, match the colors before it's too late.</div>
+          <div class="card-tags">
+            <span class="tag cyan">PUZZLE</span>
+            <span class="tag cyan">CLASSIC</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="game-card" data-game="air-hockey" onclick="launchGame(this)">
+        <div class="card-preview" style="background:#0a1628; position:relative; overflow:hidden;">
+          <svg width="280" height="190" viewBox="0 0 280 190" style="position:absolute;inset:0;">
+            <!-- Table surface -->
+            <rect x="20" y="15" width="240" height="160" rx="8" fill="none" stroke="#1589FF" stroke-width="3"/>
+            <!-- Center line -->
+            <line x1="20" y1="95" x2="260" y2="95" stroke="#1589FF" stroke-width="2" opacity="0.6"/>
+            <!-- Center circle -->
+            <circle cx="140" cy="95" r="28" fill="none" stroke="#1589FF" stroke-width="2" opacity="0.8"/>
+            <circle cx="140" cy="95" r="4" fill="#1589FF" opacity="0.8"/>
+            <!-- Goals -->
+            <line x1="80" y1="15" x2="200" y2="15" stroke="#000" stroke-width="5"/>
+            <line x1="80" y1="175" x2="200" y2="175" stroke="#000" stroke-width="5"/>
+            <!-- Goal arcs -->
+            <path d="M 80 15 A 60 30 0 0 1 200 15" fill="none" stroke="#1589FF" stroke-width="2" opacity="0.6"/>
+            <path d="M 80 175 A 60 30 0 0 0 200 175" fill="none" stroke="#1589FF" stroke-width="2" opacity="0.6"/>
+            <!-- Player mallet (orange) -->
+            <circle cx="140" cy="148" r="18" fill="#F87217" stroke="#9F000F" stroke-width="2" opacity="0.95"/>
+            <circle cx="140" cy="148" r="6" fill="#fff" opacity="0.3"/>
+            <!-- CPU mallet (yellow) -->
+            <circle cx="140" cy="42" r="18" fill="#ffdc00" stroke="#9F000F" stroke-width="2" opacity="0.95"/>
+            <circle cx="140" cy="42" r="6" fill="#fff" opacity="0.3"/>
+            <!-- Puck -->
+            <circle cx="165" cy="110" r="10" fill="#7D0552" stroke="#4CC417" stroke-width="2"/>
+          </svg>
+        </div>
+        <div class="card-info">
+          <div class="card-title-row">
+            <span class="card-title">AIR HOCKEY</span>
+            <span class="card-badge">1P</span>
+          </div>
+          <div class="card-desc">Flick the puck into the goal. Mouse to move your mallet.</div>
+          <div class="card-tags">
+            <span class="tag cyan">SPORTS</span>
+            <span class="tag cyan">MOUSE</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="game-card" data-game="space-invaders" onclick="launchGame(this)">
+        <div class="card-preview" style="background:#000010; position:relative; overflow:hidden;">
+          <svg width="280" height="190" viewBox="0 0 280 190" style="position:absolute;inset:0;">
+            <!-- Stars -->
+            <circle cx="30" cy="20" r="1" fill="#fff" opacity="0.6"/>
+            <circle cx="90" cy="45" r="1" fill="#fff" opacity="0.4"/>
+            <circle cx="150" cy="15" r="1.5" fill="#fff" opacity="0.7"/>
+            <circle cx="220" cy="38" r="1" fill="#fff" opacity="0.5"/>
+            <circle cx="255" cy="10" r="1" fill="#fff" opacity="0.6"/>
+            <circle cx="60" cy="70" r="1" fill="#fff" opacity="0.3"/>
+            <circle cx="200" cy="60" r="1" fill="#fff" opacity="0.5"/>
+            <!-- Alien row 1 (small, tight grid) -->
+            <g fill="#00ff88" opacity="0.9">
+              <rect x="35" y="55" width="14" height="10" rx="2"/>
+              <rect x="58" y="55" width="14" height="10" rx="2"/>
+              <rect x="81" y="55" width="14" height="10" rx="2"/>
+              <rect x="104" y="55" width="14" height="10" rx="2"/>
+              <rect x="127" y="55" width="14" height="10" rx="2"/>
+              <rect x="150" y="55" width="14" height="10" rx="2"/>
+              <rect x="173" y="55" width="14" height="10" rx="2"/>
+              <rect x="196" y="55" width="14" height="10" rx="2"/>
+              <rect x="219" y="55" width="14" height="10" rx="2"/>
+            </g>
+            <!-- Alien row 2 -->
+            <g fill="#00ccff" opacity="0.85">
+              <rect x="35" y="75" width="14" height="10" rx="2"/>
+              <rect x="58" y="75" width="14" height="10" rx="2"/>
+              <rect x="81" y="75" width="14" height="10" rx="2"/>
+              <rect x="104" y="75" width="14" height="10" rx="2"/>
+              <rect x="127" y="75" width="14" height="10" rx="2"/>
+              <rect x="150" y="75" width="14" height="10" rx="2"/>
+              <rect x="173" y="75" width="14" height="10" rx="2"/>
+              <rect x="196" y="75" width="14" height="10" rx="2"/>
+              <rect x="219" y="75" width="14" height="10" rx="2"/>
+            </g>
+            <!-- Alien row 3 -->
+            <g fill="#ff44ff" opacity="0.85">
+              <rect x="35" y="95" width="14" height="10" rx="2"/>
+              <rect x="58" y="95" width="14" height="10" rx="2"/>
+              <rect x="81" y="95" width="14" height="10" rx="2"/>
+              <rect x="104" y="95" width="14" height="10" rx="2"/>
+              <rect x="127" y="95" width="14" height="10" rx="2"/>
+              <rect x="150" y="95" width="14" height="10" rx="2"/>
+              <rect x="173" y="95" width="14" height="10" rx="2"/>
+              <rect x="196" y="95" width="14" height="10" rx="2"/>
+              <rect x="219" y="95" width="14" height="10" rx="2"/>
+            </g>
+            <!-- Laser bolts -->
+            <rect x="122" y="110" width="3" height="12" fill="#fff" opacity="0.8"/>
+            <rect x="170" y="118" width="3" height="9" fill="#fff" opacity="0.5"/>
+            <!-- Player ship -->
+            <polygon points="140,168 124,180 156,180" fill="#fff" opacity="0.95"/>
+            <rect x="136" y="162" width="8" height="8" fill="#fff" opacity="0.95"/>
+            <!-- Player laser -->
+            <rect x="139" y="140" width="3" height="20" fill="#00ff88" opacity="0.9"/>
+          </svg>
+        </div>
+        <div class="card-info">
+          <div class="card-title-row">
+            <span class="card-title">SPACE INVADERS</span>
+            <span class="card-badge">1P</span>
+          </div>
+          <div class="card-desc">Defend Earth. Shoot the alien fleet before they reach you.</div>
+          <div class="card-tags">
+            <span class="tag cyan">SHOOTER</span>
+            <span class="tag cyan">CLASSIC</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Launch Dock -->
+  <div class="launch-dock">
+    <div class="dock-info">
+      <div class="dock-stat">
+        <span class="dock-stat-label">NOW SELECTED</span>
+        <span class="dock-stat-value" style="color:#00e5ff;text-shadow:0 0 10px #00e5ff" id="dock-title">ASTEROIDS</span>
+      </div>
+      <div class="dock-divider"></div>
+      <div class="dock-stat">
+        <span class="dock-stat-label">TOP SCORE</span>
+        <span class="dock-stat-value" style="color:#ffd600;text-shadow:0 0 8px #ffd600">12400</span>
+      </div>
+      <div class="dock-divider"></div>
+      <div class="dock-stat">
+        <span class="dock-stat-label">PLAYS</span>
+        <span class="dock-stat-value">7</span>
+      </div>
+    </div>
+    <div class="dock-right">
+      <div class="controls-hint">
+        <span class="label">CONTROLS</span>
+        <span class="keys">ARROWS + SPACE</span>
+      </div>
+      <button class="find-diva-btn" id="find-diva-btn">FIND DIVA!</button>
+    </div>
+  </div>
+
+  <!-- Player Initials Wheel -->
+  <div class="ps-overlay" id="wheel-overlay">
+    <div class="ps-box">
+      <div class="ps-title">INSERT INITIALS</div>
+      <div class="ps-sub">WHO'S PLAYING?</div>
+      <div class="wheel-cols">
+        <div class="wheel-col active" data-col="0">
+          <button class="wheel-btn" onclick="wheelUp(0)">▲</button>
+          <div class="wheel-letter" id="wl-0">A</div>
+          <button class="wheel-btn" onclick="wheelDn(0)">▼</button>
+        </div>
+        <div class="wheel-col" data-col="1">
+          <button class="wheel-btn" onclick="wheelUp(1)">▲</button>
+          <div class="wheel-letter" id="wl-1">A</div>
+          <button class="wheel-btn" onclick="wheelDn(1)">▼</button>
+        </div>
+        <div class="wheel-col" data-col="2">
+          <button class="wheel-btn" onclick="wheelUp(2)">▲</button>
+          <div class="wheel-letter" id="wl-2">A</div>
+          <button class="wheel-btn" onclick="wheelDn(2)">▼</button>
+        </div>
+      </div>
+      <div class="ps-existing" id="ep-wrap" style="display:none">
+        <div class="ps-existing-label">RETURNING PLAYERS</div>
+        <div class="ps-existing-players" id="ep-list"></div>
+      </div>
+      <div class="ps-actions">
+        <button class="ps-btn-primary" onclick="confirmInitials()">CONFIRM</button>
+        <button class="ps-btn-ghost"   onclick="skipInitials()">SKIP</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Score Submit -->
+  <div class="ps-overlay" id="score-overlay">
+    <div class="ps-box">
+      <div class="ps-title">SUBMIT SCORE</div>
+      <div class="score-game-title" id="score-game-title">ASTEROIDS</div>
+      <div class="ps-sub">ENTER YOUR SCORE</div>
+      <input type="number" id="score-input" class="score-input" min="0" placeholder="0" />
+      <div class="ps-actions">
+        <button class="ps-btn-primary" onclick="confirmScore()">SUBMIT</button>
+        <button class="ps-btn-ghost"   onclick="skipScore()">SKIP</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaderboard -->
+  <div class="ps-overlay" id="lb-overlay">
+    <div class="ps-box lb-box">
+      <div class="lb-header-row">
+        <div class="ps-title">HIGH SCORES</div>
+        <button class="ps-btn-ghost" onclick="hideLeaderboard()">CLOSE</button>
+      </div>
+      <div id="lb-content" style="width:100%"></div>
+    </div>
+  </div>
+
+  <!-- Game Modal -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="modal-title">ASTEROIDS</span>
+        <button class="modal-close" onclick="closeGame()">✕ EXIT</button>
+      </div>
+      <iframe id="game-frame" src="" width="800" height="580"></iframe>
+    </div>
+  </div>
+
+  <script>
+    // ── Games config ──────────────────────────────────────────────
+    const games = {
+      asteroids:         { title: 'ASTEROIDS',       src: 'games/asteroids/index.html',       available: true, viewport: 0.9 },
+      'missile-command': { title: 'MISSILE COMMAND', src: 'games/missile-command/index.html', available: true, w: 820,  h: 590 },
+      pinball:           { title: 'PINBALL',         src: 'https://pinball.flutter.dev/',     available: true, viewport: 0.9 },
+      pong:              { title: 'PONG',            src: 'games/pong/game.html',             available: true, viewport: 0.8 },
+      hextris:           { title: 'HEXTRIS',         src: 'games/hextris/index.html',         available: true, w: 700,  h: 700, fullscreen: true },
+      'air-hockey':      { title: 'AIR HOCKEY',      src: 'games/air-hockey/index.html',      available: true, viewport: 0.9 },
+      'space-invaders':  { title: 'SPACE INVADERS',  src: 'games/space-invaders/index.html',  available: true, w: 640,  h: 460 },
+    };
+    let selected = 'asteroids';
+    const controls = {
+      'asteroids':       'ARROWS + SPACE',
+      'missile-command': 'MOUSE CLICK',
+      'pinball':         'Z / / KEYS',
+      'pong':            'MOUSE TO MOVE',
+      'hextris':         '← → ROTATE  ↓ SPEED',
+      'air-hockey':      'MOUSE TO MOVE',
+      'space-invaders':  '← → MOVE  SPACE FIRE',
+    };
+
+    // ── Player System (localStorage) ──────────────────────────────
+    const PS = {
+      getPlayer:   () => localStorage.getItem('arc_player') || null,
+      setPlayer:   (i) => { localStorage.setItem('arc_player', i); PS.addPlayer(i); },
+      getPlayers:  () => JSON.parse(localStorage.getItem('arc_players') || '[]'),
+      addPlayer:   (i) => {
+        const p = PS.getPlayers();
+        if (!p.includes(i)) { p.push(i); localStorage.setItem('arc_players', JSON.stringify(p)); }
+      },
+      getScores:   () => JSON.parse(localStorage.getItem('arc_scores') || '{}'),
+      submitScore: (game, initials, score) => {
+        const s = PS.getScores();
+        if (!s[game]) s[game] = {};
+        if (score > (s[game][initials] || 0)) {
+          s[game][initials] = score;
+          localStorage.setItem('arc_scores', JSON.stringify(s));
+          return true;
+        }
+        return false;
+      },
+      getTopScores: (game, n = 3) => {
+        const g = PS.getScores()[game] || {};
+        return Object.entries(g).sort((a, b) => b[1] - a[1]).slice(0, n);
+      },
+      getHiScore: () => {
+        let best = 0;
+        Object.values(PS.getScores()).forEach(g =>
+          Object.values(g).forEach(v => { if (v > best) best = v; }));
+        return best || null;
+      },
+    };
+
+    // ── Letter wheel ───────────────────────────────────────────────
+    const AZ = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let W = [0, 0, 0];
+    let WCol = 0;
+    let pendingCard = null;
+
+    function wSetCol(c) {
+      WCol = c;
+      document.querySelectorAll('.wheel-col').forEach((el, i) =>
+        el.classList.toggle('active', i === c));
+    }
+    function wheelUp(c) {
+      W[c] = (W[c] + 25) % 26;
+      document.getElementById('wl-' + c).textContent = AZ[W[c]];
+      wSetCol(c);
+    }
+    function wheelDn(c) {
+      W[c] = (W[c] + 1) % 26;
+      document.getElementById('wl-' + c).textContent = AZ[W[c]];
+      wSetCol(c);
+    }
+    function wInitials() { return W.map(i => AZ[i]).join(''); }
+
+    function showWheelModal(card) {
+      pendingCard = card || null;
+      const cur = PS.getPlayer();
+      W = cur ? cur.split('').map(c => AZ.indexOf(c)) : [0, 0, 0];
+      [0, 1, 2].forEach(i => { document.getElementById('wl-' + i).textContent = AZ[W[i]]; });
+      wSetCol(0);
+      const existing = PS.getPlayers();
+      const wrap = document.getElementById('ep-wrap');
+      if (existing.length) {
+        document.getElementById('ep-list').innerHTML = existing
+          .map(p => `<button class="player-pill" onclick="selectPlayer('${p}')">${p}</button>`)
+          .join('');
+        wrap.style.display = 'flex';
+      } else {
+        wrap.style.display = 'none';
+      }
+      document.getElementById('wheel-overlay').classList.add('open');
+    }
+    function hideWheelModal() { document.getElementById('wheel-overlay').classList.remove('open'); }
+    function confirmInitials() {
+      PS.setPlayer(wInitials());
+      updateHeader();
+      hideWheelModal();
+      if (pendingCard) { _doLaunch(pendingCard); pendingCard = null; }
+    }
+    function skipInitials() {
+      hideWheelModal();
+      if (pendingCard) { _doLaunch(pendingCard); pendingCard = null; }
+    }
+    function selectPlayer(initials) {
+      PS.setPlayer(initials);
+      updateHeader();
+      hideWheelModal();
+      if (pendingCard) { _doLaunch(pendingCard); pendingCard = null; }
+    }
+
+    // ── Score submit ───────────────────────────────────────────────
+    let scoreGameKey = null;
+    function showScoreModal(gameKey) {
+      scoreGameKey = gameKey;
+      document.getElementById('score-game-title').textContent =
+        games[gameKey]?.title || gameKey.toUpperCase();
+      document.getElementById('score-input').value = '';
+      document.getElementById('score-overlay').classList.add('open');
+      setTimeout(() => document.getElementById('score-input').focus(), 60);
+    }
+    function hideScoreModal() {
+      document.getElementById('score-overlay').classList.remove('open');
+      scoreGameKey = null;
+    }
+    function confirmScore() {
+      const score = parseInt(document.getElementById('score-input').value) || 0;
+      const player = PS.getPlayer();
+      if (player && scoreGameKey && score > 0) {
+        PS.submitScore(scoreGameKey, player, score);
+        renderAllCardScores();
+        updateHeader();
+      }
+      hideScoreModal();
+    }
+    function skipScore() { hideScoreModal(); }
+
+    // ── Leaderboard ────────────────────────────────────────────────
+    function showLeaderboard() {
+      const content = document.getElementById('lb-content');
+      let html = '';
+      Object.keys(games).forEach(key => {
+        const top = PS.getTopScores(key, 5);
+        html += `<div class="lb-game-block"><div class="lb-game-name">${games[key].title}</div>`;
+        if (!top.length) {
+          html += `<div class="lb-row lb-empty">NO SCORES YET</div>`;
+        } else {
+          top.forEach(([init, score], i) => {
+            html += `<div class="lb-row lb-rank-${i + 1}">
+              <span class="lb-rank">#${i + 1}</span>
+              <span class="lb-initials">${init}</span>
+              <span class="lb-score">${score.toLocaleString()}</span>
+            </div>`;
+          });
+        }
+        html += `</div>`;
+      });
+      content.innerHTML = html;
+      document.getElementById('lb-overlay').classList.add('open');
+    }
+    function hideLeaderboard() { document.getElementById('lb-overlay').classList.remove('open'); }
+
+    // ── UI refresh ─────────────────────────────────────────────────
+    function renderAllCardScores() {
+      document.querySelectorAll('.game-card').forEach(card => {
+        const key = card.dataset.game;
+        if (!key) return;
+        let el = card.querySelector('.card-scores');
+        if (!el) {
+          el = document.createElement('div');
+          el.className = 'card-scores';
+          card.querySelector('.card-info').appendChild(el);
+        }
+        const top = PS.getTopScores(key, 3);
+        el.innerHTML = top.map((s, i) =>
+          `<span class="score-entry">#${i + 1} ${s[0]} ${Number(s[1]).toLocaleString()}</span>`
+        ).join('');
+      });
+    }
+    function updateHeader() {
+      const player = PS.getPlayer();
+      document.getElementById('header-player').textContent = player || 'INSERT COIN';
+      const hi = PS.getHiScore();
+      document.getElementById('header-hiscore').textContent = hi ? hi.toLocaleString() : '—';
+    }
+
+    // ── Game launch / close ────────────────────────────────────────
+    let playerChecked = false;
+
+    function launchGame(card) {
+      document.querySelectorAll('.game-card').forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      selected = card.dataset.game;
+      document.getElementById('dock-title').textContent = games[selected].title;
+      document.querySelector('.controls-hint .keys').textContent = controls[selected] || '—';
+      const game = games[selected];
+      if (!game.available) return;
+      if (!playerChecked && !PS.getPlayer()) {
+        playerChecked = true;
+        showWheelModal(card);
+        return;
+      }
+      playerChecked = true;
+      _doLaunch(card);
+    }
+
+    function _doLaunch(card) {
+      const game    = games[selected];
+      const frame   = document.getElementById('game-frame');
+      const overlay = document.getElementById('modal');
+      const modalEl = overlay.querySelector('.modal');
+      if (game.viewport) {
+        const w = Math.floor(window.innerWidth  * game.viewport);
+        const h = Math.floor(window.innerHeight * game.viewport);
+        frame.style.width  = w + 'px';
+        frame.style.height = (h - 48) + 'px';
+        frame.removeAttribute('width');
+        frame.removeAttribute('height');
+      } else {
+        frame.style.width  = '';
+        frame.style.height = '';
+        frame.width  = game.w;
+        frame.height = game.h;
+      }
+      const rect   = card.getBoundingClientRect();
+      const cardCX = rect.left + rect.width  / 2;
+      const cardCY = rect.top  + rect.height / 2;
+      modalEl.style.transformOrigin =
+        `calc(50% + ${Math.round(cardCX - window.innerWidth  / 2)}px) ` +
+        `calc(50% + ${Math.round(cardCY - window.innerHeight / 2)}px)`;
+      overlay.classList.toggle('fullscreen', !!game.fullscreen);
+      overlay.classList.remove('closing');
+      document.getElementById('modal-title').textContent = game.title;
+      frame.onload = () => frame.contentWindow.focus();
+      frame.src = game.src;
+      overlay.classList.add('open');
+    }
+
+    function closeGame() {
+      const overlay = document.getElementById('modal');
+      overlay.classList.add('closing');
+      overlay.classList.remove('open');
+      setTimeout(() => {
+        overlay.classList.remove('closing', 'fullscreen');
+        document.getElementById('game-frame').src = '';
+        if (PS.getPlayer()) showScoreModal(selected);
+      }, 280);
+    }
+
+    // ── Keyboard ───────────────────────────────────────────────────
+    document.addEventListener('keydown', e => {
+      if (document.getElementById('wheel-overlay').classList.contains('open')) {
+        if (e.key === 'ArrowLeft')  { wSetCol((WCol + 2) % 3); e.preventDefault(); }
+        if (e.key === 'ArrowRight') { wSetCol((WCol + 1) % 3); e.preventDefault(); }
+        if (e.key === 'ArrowUp')    { wheelUp(WCol); e.preventDefault(); }
+        if (e.key === 'ArrowDown')  { wheelDn(WCol); e.preventDefault(); }
+        if (e.key === 'Enter')      { confirmInitials(); }
+        if (e.key === 'Escape')     { skipInitials(); }
+        return;
+      }
+      if (document.getElementById('score-overlay').classList.contains('open')) {
+        if (e.key === 'Enter')  { confirmScore(); }
+        if (e.key === 'Escape') { skipScore(); }
+        return;
+      }
+      if (document.getElementById('lb-overlay').classList.contains('open')) {
+        if (e.key === 'Escape') { hideLeaderboard(); }
+        return;
+      }
+      if (e.key === 'Escape') closeGame();
+    });
+
+    document.getElementById('modal').addEventListener('click', e => {
+      if (e.target.closest('.modal-close')) return;
+      const frame = document.getElementById('game-frame');
+      if (frame.src) frame.contentWindow.focus();
+    });
+
+    // ── Init ───────────────────────────────────────────────────────
+    updateHeader();
+    renderAllCardScores();
+
+    // ── Fade in ────────────────────────────────────────────────────
+    requestAnimationFrame(function() {
+      setTimeout(function() { document.body.classList.add('fd-ready'); }, 80);
+    });
+
+    // ── Back to landing page ───────────────────────────────────────
+    function navToHome() {
+      document.body.style.transition = 'opacity 0.5s ease';
+      document.body.style.opacity = '0';
+      setTimeout(function() { window.location.href = '../landingpage/index.html'; }, 500);
+    }
+    document.getElementById('back-btn').addEventListener('click', navToHome);
+    document.getElementById('find-diva-btn').addEventListener('click', navToHome);
+  </script>
+
+</body>
+</html>

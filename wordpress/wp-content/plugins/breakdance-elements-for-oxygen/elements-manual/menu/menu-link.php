@@ -1,0 +1,69 @@
+<?php
+
+namespace EssentialElements;
+
+class MenuLink extends \EssentialElements\TextLink
+{
+
+    static function tag()
+    {
+        return 'li';
+    }
+
+    static function name()
+    {
+        return 'Menu Link';
+    }
+
+    static function className()
+    {
+        return 'breakdance-menu-item';
+    }
+
+    static function slug()
+    {
+       return __CLASS__;
+    }
+
+    static function nestingRule()
+    {
+        return ["type" => "final", "restrictedToBeADirectChildOf" => ['EssentialElements\MenuBuilder'] ];
+    }
+
+    static function designControls() {
+        return [];
+    }
+
+    
+
+    static function template()
+    {
+        $template = parent::template();
+
+        $start = "{{ macros.linkStart(content.content.link, 'breakdance-menu-link', '', false, 'content.content.text') }}";
+        $end = "{{ macros.linkEnd() }}";
+
+        return $start . $template . $end;
+    }
+
+    static function attributes()
+    {
+        return [];
+    }
+
+    static function additionalClasses()
+    {
+        return [['name' => 'breakdance-menu-item--active', 'template' => '{% if is_current_url(content.content.link.url) %}yes{% endif %}']];
+    }
+
+
+    static function availableIn()
+    {
+        return ['oxygen'];
+    }
+
+    static function category()
+    {
+        return 'breakdance-elements-for-oxygen';
+    }
+}

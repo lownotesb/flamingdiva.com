@@ -1,0 +1,62 @@
+services:
+
+  db:
+    image: mysql:8.0
+    container_name: flamingdiva_db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: flamingdiva
+      MYSQL_USER: fduser
+      MYSQL_PASSWORD: fdpass
+      MYSQL_ROOT_PASSWORD: fdrootpass
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - flamingdiva_net
+
+  wordpress:
+    image: wordpress:latest
+    container_name: flamingdiva_wp
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "8090:80"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: flamingdiva
+      WORDPRESS_DB_USER: fduser
+      WORDPRESS_DB_PASSWORD: fdpass
+      WORDPRESS_TABLE_PREFIX: fd_
+      WORDPRESS_DEBUG: 1
+      WORDPRESS_CONFIG_EXTRA: |
+        define('WP_DEBUG_LOG', true);
+        define('WP_DEBUG_DISPLAY', false);
+        @ini_set('display_errors', 0);
+    volumes:
+      - ./wordpress:/var/www/html
+      - ./config/php/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
+    networks:
+      - flamingdiva_net
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: flamingdiva_pma
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "8091:80"
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: fdrootpass
+    networks:
+      - flamingdiva_net
+
+volumes:
+  db_data:
+
+networks:
+  flamingdiva_net:
+    driver: bridge
