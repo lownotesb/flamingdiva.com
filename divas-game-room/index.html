@@ -537,8 +537,8 @@
     <div style="display:flex;align-items:center;gap:28px;">
       <button class="logo-home-btn" id="back-btn" aria-label="Return to Flaming Diva">
         <picture>
-          <source srcset="/images/logo.webp" type="image/webp"/>
-          <img src="/images/logo-fullsize.png" alt="Flaming Diva" class="header-logo"/>
+          <source srcset="../landingpage/images/logo.webp" type="image/webp"/>
+          <img src="../landingpage/images/logo-fullsize.png" alt="Flaming Diva" class="header-logo"/>
         </picture>
       </button>
       <div class="logo">Diva's Game Room</div>
@@ -943,13 +943,13 @@
   <script>
     // ── Games config ──────────────────────────────────────────────
     const games = {
-      asteroids:         { title: 'ASTEROIDS',       src: '/arcade/games/asteroids/index.html',       available: true, viewport: 0.9 },
-      'missile-command': { title: 'MISSILE COMMAND', src: '/arcade/games/missile-command/index.html', available: true, w: 820,  h: 590 },
+      asteroids:         { title: 'ASTEROIDS',       src: '../arcade/games/asteroids/index.html',       available: true, viewport: 0.9 },
+      'missile-command': { title: 'MISSILE COMMAND', src: '../arcade/games/missile-command/index.html', available: true, w: 820,  h: 590 },
       pinball:           { title: 'PINBALL',         src: 'https://pinball.flutter.dev/',             available: true, viewport: 0.9 },
-      pong:              { title: 'PONG',            src: '/arcade/games/pong/game.html',             available: true, viewport: 0.8 },
-      hextris:           { title: 'HEXTRIS',         src: '/arcade/games/hextris/index.html',         available: true, w: 700,  h: 700, fullscreen: true },
-      'air-hockey':      { title: 'AIR HOCKEY',      src: '/arcade/games/air-hockey/index.html',      available: true, viewport: 0.9 },
-      'space-invaders':  { title: 'SPACE INVADERS',  src: '/arcade/games/space-invaders/index.html',  available: true, w: 640,  h: 460 },
+      pong:              { title: 'PONG',            src: '../arcade/games/pong/game.html',             available: true, viewport: 0.8 },
+      hextris:           { title: 'HEXTRIS',         src: '../arcade/games/hextris/index.html',         available: true, w: 700,  h: 700, fullscreen: true },
+      'air-hockey':      { title: 'AIR HOCKEY',      src: '../arcade/games/air-hockey/index.html',      available: true, viewport: 0.9 },
+      'space-invaders':  { title: 'SPACE INVADERS',  src: '../arcade/games/space-invaders/index.html',  available: true, w: 640,  h: 460 },
     };
     let selected = 'asteroids';
     const controls = {
@@ -1233,7 +1233,7 @@
     function navToHome() {
       document.body.style.transition = 'opacity 0.9s ease';
       document.body.style.opacity = '0';
-      setTimeout(function() { window.location.href = '/'; }, 900);
+      setTimeout(function() { window.location.href = '../'; }, 900);
     }
     document.getElementById('back-btn').addEventListener('click', navToHome);
     document.getElementById('find-diva-btn').addEventListener('click', navToHome);
