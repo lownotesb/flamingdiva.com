@@ -418,7 +418,7 @@
   // ── Shader parameter definitions ──────────────────────────────────────────
   const SHADER_PARAMS = [
     [ // 0: Plasma
-      { label: 'Speed',     uniform: 'u_speed',    min: 0.01, max: 0.60, step: 0.01,  def: 0.18  },
+      { label: 'Speed',     uniform: 'u_speed',    min: 0.01, max: 0.60, step: 0.01,  def: 0.11  },
       { label: 'Warp',      uniform: 'u_warp',     min: 0.5,  max: 10.0, step: 0.1,   def: 4.0   },
       { label: 'Contrast',  uniform: 'u_contrast', min: 0.3,  max: 3.0,  step: 0.05,  def: 1.4   },
       { label: 'Hue Drift', uniform: 'u_hue',      min: 0.0,  max: 1.0,  step: 0.01,  def: 0.1   },
@@ -659,15 +659,14 @@
   }
 
   let _dissolved = false;
-  let _overLabel  = false;
   let _idleTimer  = null;
 
   function fdDissolve() {
     if (_dissolved) return;
     _dissolved = true;
     dissolveTargets().forEach(el => {
-      el.style.transition   = 'opacity 2.5s ease';
-      el.style.opacity      = '0';
+      el.style.transition    = 'opacity 5s ease';
+      el.style.opacity       = '0';
       el.style.pointerEvents = 'none';
     });
   }
@@ -676,7 +675,7 @@
     if (!_dissolved) return;
     _dissolved = false;
     dissolveTargets().forEach(el => {
-      el.style.transition    = 'opacity 0.7s ease';
+      el.style.transition    = 'opacity 15s ease';
       el.style.opacity       = '';
       el.style.pointerEvents = '';
     });
@@ -688,20 +687,19 @@
     _idleTimer = setTimeout(fdDissolve, 120000); // 2 minutes
   }
 
-  // Hover shader label → dissolve; leave → restore
-  shaderLabel.addEventListener('mouseenter', () => { _overLabel = true;  fdDissolve(); });
-  shaderLabel.addEventListener('mouseleave', () => { _overLabel = false; });
+  // Hover shader label → slowly dissolve into screensaver
+  shaderLabel.addEventListener('mouseenter', fdDissolve);
 
-  // Mouse moves away from label → restore
-  document.addEventListener('mousemove', () => {
-    fdResetIdle();
-    if (!_overLabel) fdRestore();
-  }, { passive: true });
+  // Mouse movement resets idle timer only — does NOT restore content
+  document.addEventListener('mousemove', fdResetIdle, { passive: true });
 
-  // Any click/key/touch → restore + reset idle
-  ['mousedown', 'keydown', 'touchstart'].forEach(evt => {
+  // Only a deliberate click/tap restores page content
+  ['mousedown', 'touchstart'].forEach(evt => {
     document.addEventListener(evt, () => { fdRestore(); fdResetIdle(); }, { passive: true });
   });
+
+  // Persist shader choice on page navigation
+  window.addEventListener('beforeunload', savePrefs);
 
   fdResetIdle(); // start the idle timer
 
