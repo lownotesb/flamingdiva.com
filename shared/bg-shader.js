@@ -1,10 +1,30 @@
 /**
- * plasma-bg.js — Flaming Diva shared WebGL background + shader switcher
- * Include in any page: <script src="../shared/plasma-bg.js"></script>
+ * bg-shader.js — Flaming Diva shared WebGL background + shader switcher
+ * Include in any page: <script src="../shared/bg-shader.js"></script>
  * Requires: Rubik + Bebas Neue fonts (auto-injected if missing)
  */
 (function () {
   'use strict';
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // CONFIGURATION — adjust these values to tune the shader system
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  // ── Screensaver timings ────────────────────────────────────────────────────
+  const IDLE_MS       = 120000;  // idle time before auto-dissolve (ms)
+  const DISSOLVE_SECS = 5;       // content fade-to-black (seconds)
+  const RESTORE_SECS  = 15;      // content fade-in on click (seconds)
+
+  // ── UI element transition durations ───────────────────────────────────────
+  const T_CANVAS   = '0.35s';   // canvas opacity crossfade (shader switch)
+  const T_LABEL    = '0.3s';    // shader name label fade
+  const T_SWITCHER = '0.35s';   // switcher slide-in animation
+
+  // ── Storage ───────────────────────────────────────────────────────────────
+  const STORAGE_KEY = 'fd_shader';
+
+  // Derived numeric equivalents (do not edit directly)
+  const T_CANVAS_MS = parseFloat(T_CANVAS) * 1000;  // 350
 
   // ── Fonts ─────────────────────────────────────────────────────────────────
   if (!document.querySelector('link[href*="Bebas+Neue"]')) {
@@ -21,7 +41,7 @@
       position: fixed; inset: 0;
       width: 100%; height: 100%;
       z-index: 0;
-      transition: opacity 0.35s ease;
+      transition: opacity ${T_CANVAS} ease;
     }
     .fd-vignette {
       position: fixed; inset: 0;
@@ -32,7 +52,7 @@
       position: fixed; top: 24px; right: 32px; z-index: 10;
       font-family: 'Bebas Neue', sans-serif; font-size: 13px; letter-spacing: 0.22em;
       color: rgba(255,255,255,0.25); text-transform: uppercase;
-      transition: opacity 0.3s ease;
+      transition: opacity ${T_LABEL} ease;
     }
     #fd-shader-open-btn {
       position: fixed; bottom: 28px; left: 28px; z-index: 11;
@@ -67,7 +87,7 @@
       border: 1px solid rgba(255,255,255,0.07);
       backdrop-filter: blur(12px);
       transform: translateX(-120%); opacity: 0;
-      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.28s ease;
+      transition: transform ${T_SWITCHER} cubic-bezier(0.4, 0, 0.2, 1), opacity 0.28s ease;
       pointer-events: none;
     }
     .fd-shader-switcher.open {
@@ -521,14 +541,14 @@
   function savePrefs() {
     const state = { idx: current, params: {} };
     SHADER_PARAMS[current].forEach(p => { state.params[p.uniform] = p.value; });
-    try { localStorage.setItem('fd_shader', JSON.stringify(state)); } catch(e) {}
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
   }
 
   let current = 0;
   const start = performance.now();
 
   try {
-    const saved = JSON.parse(localStorage.getItem('fd_shader') || 'null');
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
     if (saved && saved.idx >= 0 && saved.idx < NAMES.length) {
       current = saved.idx;
       SHADER_PARAMS[saved.idx].forEach(p => {
@@ -629,8 +649,8 @@
           current = idx; savePrefs();
           canvas.style.opacity = '1';
           shaderLabel.textContent = NAMES[idx];
-          setTimeout(() => { shaderLabel.style.opacity = '1'; }, 350);
-        }, 350);
+          setTimeout(() => { shaderLabel.style.opacity = '1'; }, T_CANVAS_MS);
+        }, T_CANVAS_MS);
       } else {
         shaderLabel.textContent = NAMES[idx];
         setTimeout(() => { shaderLabel.style.opacity = '1'; }, 100);
@@ -665,7 +685,7 @@
     if (_dissolved) return;
     _dissolved = true;
     dissolveTargets().forEach(el => {
-      el.style.transition    = 'opacity 5s ease';
+      el.style.transition    = `opacity ${DISSOLVE_SECS}s ease`;
       el.style.opacity       = '0';
       el.style.pointerEvents = 'none';
     });
@@ -675,7 +695,7 @@
     if (!_dissolved) return;
     _dissolved = false;
     dissolveTargets().forEach(el => {
-      el.style.transition    = 'opacity 15s ease';
+      el.style.transition    = `opacity ${RESTORE_SECS}s ease`;
       el.style.opacity       = '';
       el.style.pointerEvents = '';
     });
@@ -684,7 +704,7 @@
 
   function fdResetIdle() {
     clearTimeout(_idleTimer);
-    _idleTimer = setTimeout(fdDissolve, 120000); // 2 minutes
+    _idleTimer = setTimeout(fdDissolve, IDLE_MS);
   }
 
   // Hover shader label → slowly dissolve into screensaver

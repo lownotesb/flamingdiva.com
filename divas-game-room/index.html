@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Flaming Diva — Arcade</title>
+  <title>Flaming Diva — Diva's Game Room</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&family=VT323&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Press+Start+2P&family=Silkscreen:wght@400;700&family=VT323&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -16,7 +16,7 @@
       height: 100vh;
       overflow: hidden;
       opacity: 0;
-      transition: opacity 0.8s ease;
+      transition: opacity 1.8s ease;
     }
 
     /* Hide plasma background UI controls on arcade page */
@@ -26,24 +26,66 @@
     #fd-shader-label { display: none !important; }
     body.fd-ready { opacity: 1; }
 
+    @keyframes slideInDown {
+      from { opacity: 0; transform: translateY(-12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideInUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes fadeInCard {
+      from { opacity: 0; transform: translateY(16px) scale(0.97); }
+      to   { opacity: 0.55; transform: translateY(0) scale(1); }
+    }
+    @keyframes fadeInCardActive {
+      from { opacity: 0; transform: translateY(16px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
     /* ── Header ── */
     header {
-      height: 64px;
-      border-bottom: 1px solid rgba(0,229,255,0.15);
-      background: rgba(6,0,14,0.82);
-      backdrop-filter: blur(20px);
+      height: auto;
+      min-height: clamp(72px, 10vh, 100px);
+      border-bottom: 1px solid rgba(0,229,255,0.06);
+      background: linear-gradient(180deg, rgba(6,0,14,0.55) 0%, rgba(6,0,14,0.15) 100%);
+      backdrop-filter: blur(8px);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 40px;
+      padding: clamp(8px, 1.4vh, 14px) 40px;
       position: relative;
       z-index: 3;
+      animation: slideInDown 1.0s ease 0.4s both;
     }
+    .header-logo {
+      height: clamp(55px, 9vh, 85px);
+      width: auto;
+      opacity: 0.9;
+      display: block;
+    }
+    .logo-home-btn {
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      transition: opacity 0.2s ease;
+    }
+    .logo-home-btn:hover { opacity: 0.7; }
     .logo {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 18px;
-      color: #00e5ff;
-      text-shadow: 0 0 12px #00e5ff, 0 0 28px rgba(0,229,255,0.4);
+      font-family: 'Permanent Marker', cursive;
+      font-size: clamp(36px, 6vw, 85px);
+      background: linear-gradient(90deg, #FF3800, #FF006B, #9400FF);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 12px rgba(255,56,0,0.5));
     }
     .header-stats {
       display: flex;
@@ -56,8 +98,8 @@
       font-family: 'Press Start 2P', monospace;
       font-size: 13px;
     }
-    .stat-value.yellow { color: #ffd600; text-shadow: 0 0 8px #ffd600; }
-    .stat-value.pink   { color: #ff2d78; text-shadow: 0 0 8px #ff2d78; }
+    .stat-value.yellow { color: #FF3800; text-shadow: 0 0 10px rgba(255,56,0,0.5); }
+    .stat-value.pink   { color: #FF006B; text-shadow: 0 0 8px rgba(255,0,107,0.6); }
 
     /* ── Main ── */
     main {
@@ -81,19 +123,20 @@
     .back-link::before { content: '←'; font-size: 14px; margin-right: 2px; }
     .section-label {
       font-size: 10px;
-      color: #00e5ff;
+      color: #FF006B;
       letter-spacing: 0.2em;
       margin-bottom: 20px;
       display: flex;
       align-items: center;
       gap: 16px;
+      animation: fadeIn 1.0s ease 0.7s both;
     }
     .section-label::after {
       content: '';
       display: block;
       width: 200px;
       height: 1px;
-      background: linear-gradient(90deg, #00e5ff44, transparent);
+      background: linear-gradient(90deg, rgba(255,0,107,0.27), transparent);
     }
 
     /* ── Game Grid ── */
@@ -112,13 +155,21 @@
       transition: border-color 0.2s, box-shadow 0.2s;
       opacity: 0.55;
       flex-shrink: 0;
+      animation: fadeInCard 0.8s ease both;
     }
     .game-card.active, .game-card:hover {
-      border-color: rgba(0,229,255,0.5);
-      box-shadow: 0 0 24px rgba(255,56,0,0.25), 0 0 48px rgba(0,229,255,0.1);
+      border-color: rgba(255,56,0,0.6);
+      box-shadow: 0 0 20px rgba(255,56,0,0.25), 0 0 40px rgba(255,0,107,0.15);
       opacity: 1;
     }
-    .game-card.active { opacity: 1; }
+    .game-card.active { animation: fadeInCardActive 0.8s ease both; }
+    .game-card:nth-child(1) { animation-delay: 0.80s; }
+    .game-card:nth-child(2) { animation-delay: 0.92s; }
+    .game-card:nth-child(3) { animation-delay: 1.04s; }
+    .game-card:nth-child(4) { animation-delay: 1.16s; }
+    .game-card:nth-child(5) { animation-delay: 1.28s; }
+    .game-card:nth-child(6) { animation-delay: 1.40s; }
+    .game-card:nth-child(7) { animation-delay: 1.52s; }
 
     .card-preview {
       width: 100%;
@@ -168,10 +219,11 @@
     }
     .card-badge {
       font-size: 9px;
-      color: #39ff14;
-      background: rgba(57,255,20,0.1);
+      color: #FF3800;
+      background: rgba(255,56,0,0.1);
       padding: 2px 7px;
-      border: 1px solid rgba(57,255,20,0.3);
+      border: 1px solid rgba(255,56,0,0.3);
+      text-shadow: 0 0 8px rgba(255,56,0,0.6);
     }
     .card-desc {
       font-family: 'VT323', monospace;
@@ -186,7 +238,7 @@
       padding: 2px 7px;
       border: 1px solid;
     }
-    .tag.cyan  { color: #00e5ff; border-color: rgba(0,229,255,0.3); background: rgba(0,229,255,0.06); }
+    .tag.cyan  { color: #00D4FF; border-color: rgba(0,212,255,0.3); background: rgba(0,212,255,0.06); }
     .tag.dim   { color: #3a3a58; border-color: #2a2a40; }
 
     /* ── Launch Dock ── */
@@ -194,14 +246,15 @@
       position: fixed;
       bottom: 0; left: 0; right: 0;
       height: 120px;
-      background: rgba(6,0,14,0.88);
-      border-top: 1px solid rgba(0,229,255,0.12);
+      background: linear-gradient(0deg, rgba(6,0,14,0.6) 0%, rgba(6,0,14,0.1) 100%);
+      border-top: 1px solid rgba(0,229,255,0.06);
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 0 40px;
-      backdrop-filter: blur(20px);
+      backdrop-filter: blur(8px);
       z-index: 3;
+      animation: slideInUp 1.0s ease 0.5s both;
     }
     .dock-info { display: flex; align-items: center; gap: 28px; min-width: 0; overflow: hidden; }
     .dock-stat { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
@@ -248,7 +301,7 @@
       justify-content: center;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.3s ease;
+      transition: opacity 0.5s ease;
     }
     .modal-overlay.open {
       opacity: 1;
@@ -279,8 +332,8 @@
 
     .modal {
       background: rgba(6,0,14,0.95);
-      border: 1.5px solid rgba(0,229,255,0.5);
-      box-shadow: 0 0 40px rgba(0,229,255,0.2), 0 0 80px rgba(255,56,0,0.08);
+      border: 1.5px solid rgba(255,0,107,0.4);
+      box-shadow: 0 0 40px rgba(255,56,0,0.25), 0 0 80px rgba(255,0,107,0.1);
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -288,15 +341,15 @@
       opacity: 0;
     }
     .modal-overlay.open .modal {
-      animation: modalIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      animation: modalIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     }
     .modal-overlay.closing .modal {
-      animation: modalOut 0.25s cubic-bezier(0.55, 0, 0.45, 1) forwards;
+      animation: modalOut 0.45s cubic-bezier(0.55, 0, 0.45, 1) forwards;
     }
     .modal-header {
       height: 48px;
       background: rgba(0,0,0,0.5);
-      border-bottom: 1px solid #00e5ff33;
+      border-bottom: 1px solid rgba(255,0,107,0.2);
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -306,13 +359,13 @@
     .modal-title {
       font-family: 'Press Start 2P', monospace;
       font-size: 11px;
-      color: #00e5ff;
-      text-shadow: 0 0 8px #00e5ff;
+      color: #FF006B;
+      text-shadow: 0 0 8px rgba(255,0,107,0.7);
     }
     .modal-close {
       background: none;
-      border: 1px solid #ff2d7844;
-      color: #ff2d78;
+      border: 1px solid rgba(148,0,255,0.4);
+      color: #9400FF;
       font-family: 'Press Start 2P', monospace;
       font-size: 9px;
       padding: 6px 12px;
@@ -320,7 +373,7 @@
       letter-spacing: 0.08em;
       transition: background 0.15s;
     }
-    .modal-close:hover { background: rgba(255,45,120,0.15); }
+    .modal-close:hover { background: rgba(148,0,255,0.15); }
 
     .modal iframe {
       border: none;
@@ -339,16 +392,16 @@
 
     .ps-box {
       background: rgba(6,0,14,0.95);
-      border: 1.5px solid rgba(0,229,255,0.4);
-      box-shadow: 0 0 40px rgba(0,229,255,0.15), 0 0 80px rgba(255,56,0,0.08);
+      border: 1.5px solid rgba(255,0,107,0.35);
+      box-shadow: 0 0 40px rgba(255,56,0,0.15), 0 0 80px rgba(255,0,107,0.08);
       padding: 44px 48px;
       min-width: 400px;
       display: flex; flex-direction: column; align-items: center; gap: 28px;
     }
     .ps-title {
       font-family: 'Press Start 2P', monospace;
-      font-size: 14px; color: #00e5ff;
-      text-shadow: 0 0 12px #00e5ff; text-align: center;
+      font-size: 14px; color: #FF006B;
+      text-shadow: 0 0 12px rgba(255,0,107,0.7); text-align: center;
     }
     .ps-sub { font-family: 'VT323', monospace; font-size: 20px; color: #6b7a99; text-align: center; }
 
@@ -356,12 +409,12 @@
     .wheel-cols { display: flex; gap: 14px; }
     .wheel-col  { display: flex; flex-direction: column; align-items: center; gap: 10px; }
     .wheel-btn  {
-      background: none; border: 1px solid #00e5ff33; color: #00e5ff;
+      background: none; border: 1px solid rgba(255,0,107,0.25); color: #FF006B;
       width: 56px; height: 34px; font-size: 14px; cursor: pointer;
       font-family: 'Silkscreen', monospace;
       transition: background 0.1s, border-color 0.1s;
     }
-    .wheel-btn:hover { background: rgba(0,229,255,0.1); border-color: #00e5ff88; }
+    .wheel-btn:hover { background: rgba(255,0,107,0.1); border-color: rgba(255,0,107,0.6); }
     .wheel-letter {
       font-family: 'Press Start 2P', monospace;
       font-size: 34px; color: #e8e8f0;
@@ -372,8 +425,8 @@
       transition: border-color 0.15s, box-shadow 0.15s, color 0.15s;
     }
     .wheel-col.active .wheel-letter {
-      border-color: #00e5ff;
-      box-shadow: 0 0 18px rgba(0,229,255,0.35);
+      border-color: #FF006B;
+      box-shadow: 0 0 18px rgba(255,0,107,0.4);
       color: #fff;
     }
 
@@ -395,10 +448,10 @@
     .ps-actions { display: flex; gap: 12px; }
     .ps-btn-primary {
       font-family: 'Press Start 2P', monospace; font-size: 10px; color: #000;
-      background: #00e5ff; border: none; padding: 13px 30px; cursor: pointer;
-      box-shadow: 0 0 18px rgba(0,229,255,0.4); transition: box-shadow 0.1s;
+      background: linear-gradient(90deg, #FF3800, #FF006B); border: none; padding: 13px 30px; cursor: pointer;
+      box-shadow: 0 0 18px rgba(255,56,0,0.4); transition: box-shadow 0.1s, filter 0.1s;
     }
-    .ps-btn-primary:hover { box-shadow: 0 0 30px rgba(0,229,255,0.7); }
+    .ps-btn-primary:hover { box-shadow: 0 0 30px rgba(255,56,0,0.6); filter: brightness(1.15); }
     .ps-btn-ghost {
       font-family: 'Press Start 2P', monospace; font-size: 10px; color: #6b7a99;
       background: none; border: 1px solid #2a2a40; padding: 13px 22px; cursor: pointer;
@@ -413,13 +466,13 @@
     }
     .score-input {
       font-family: 'Press Start 2P', monospace; font-size: 26px; color: #fff;
-      background: #0a0a1e; border: 2px solid #00e5ff44;
+      background: #0a0a1e; border: 2px solid rgba(255,0,107,0.3);
       padding: 14px 22px; width: 220px; text-align: center; outline: none;
       -moz-appearance: textfield;
     }
     .score-input::-webkit-outer-spin-button,
     .score-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-    .score-input:focus { border-color: #00e5ff; box-shadow: 0 0 14px rgba(0,229,255,0.3); }
+    .score-input:focus { border-color: #FF006B; box-shadow: 0 0 14px rgba(255,0,107,0.3); }
 
     /* Leaderboard */
     .lb-box { min-width: 500px; max-height: 78vh; overflow-y: auto; }
@@ -427,14 +480,14 @@
     .lb-game-block { width: 100%; margin-bottom: 18px; }
     .lb-game-name {
       font-family: 'Press Start 2P', monospace; font-size: 8px;
-      color: #00e5ff; letter-spacing: 0.1em;
+      color: #FF006B; letter-spacing: 0.1em;
       padding: 10px 0 8px; border-bottom: 1px solid #1e1e38; margin-bottom: 6px;
     }
     .lb-row { display: flex; align-items: center; padding: 5px 0; gap: 14px; }
     .lb-rank  { font-size: 10px; color: #3a3a58; width: 22px; flex-shrink: 0; }
     .lb-initials { font-family: 'Press Start 2P', monospace; font-size: 11px; flex: 1; }
-    .lb-score    { font-family: 'Press Start 2P', monospace; font-size: 11px; color: #ffd600; }
-    .lb-rank-1 .lb-initials { color: #ffd600; }
+    .lb-score    { font-family: 'Press Start 2P', monospace; font-size: 11px; color: #FF3800; }
+    .lb-rank-1 .lb-initials { color: #FF3800; }
     .lb-rank-2 .lb-initials { color: #c0c0c0; }
     .lb-rank-3 .lb-initials { color: #cd7f32; }
     .lb-empty { font-family: 'VT323', monospace; font-size: 16px; color: #2a2a40; padding: 6px 0; }
@@ -449,28 +502,46 @@
     .player-chip .chip-label { font-size: 9px; color: #6b7a99; letter-spacing: 0.12em; }
     .player-chip .chip-value {
       font-family: 'Press Start 2P', monospace; font-size: 11px;
-      color: #ffd600; text-shadow: 0 0 8px #ffd600;
+      color: #FF3800; text-shadow: 0 0 8px rgba(255,56,0,0.5);
     }
     .lb-open-btn {
-      font-family: 'Press Start 2P', monospace; font-size: 9px; color: #00e5ff;
-      background: none; border: 1px solid #00e5ff33;
+      font-family: 'Press Start 2P', monospace; font-size: 9px; color: #FF006B;
+      background: none; border: 1px solid rgba(255,0,107,0.3);
       padding: 8px 16px; cursor: pointer; transition: border-color 0.15s, background 0.15s;
     }
-    .lb-open-btn:hover { border-color: #00e5ff; background: rgba(0,229,255,0.06); }
+    .lb-open-btn:hover { border-color: #FF006B; background: rgba(255,0,107,0.06); }
 
     /* Card scores */
     .card-scores { padding: 0 18px 14px; display: flex; gap: 10px; flex-wrap: wrap; min-height: 0; }
-    .score-entry { font-family: 'Press Start 2P', monospace; font-size: 7px; color: #ffd600; opacity: 0.85; }
+    .score-entry { font-family: 'Press Start 2P', monospace; font-size: 7px; color: #FF3800; opacity: 0.85; }
+
+    /* ── Header smoke ── */
+    #arcade-smoke {
+      position: fixed;
+      top: 0; left: 0;
+      width: 600px; height: 650px;
+      z-index: 4;
+      pointer-events: none;
+      mix-blend-mode: screen; /* try: normal | multiply | overlay */
+      opacity: 0;
+      animation: fadeIn 1.4s ease forwards 1.0s;
+    }
   </style>
 </head>
 <body>
-<script src="../shared/plasma-bg.js"></script>
+<canvas id="arcade-smoke"></canvas>
+<script src="../shared/bg-shader.js"></script>
 
   <!-- Header -->
   <header>
     <div style="display:flex;align-items:center;gap:28px;">
-      <button class="back-link" id="back-btn">flamingdiva</button>
-      <div class="logo">ARCADE</div>
+      <button class="logo-home-btn" id="back-btn" aria-label="Return to Flaming Diva">
+        <picture>
+          <source srcset="/images/logo.webp" type="image/webp"/>
+          <img src="/images/logo-fullsize.png" alt="Flaming Diva" class="header-logo"/>
+        </picture>
+      </button>
+      <div class="logo">Diva's Game Room</div>
     </div>
     <div class="header-stats">
       <div class="stat">
@@ -872,13 +943,13 @@
   <script>
     // ── Games config ──────────────────────────────────────────────
     const games = {
-      asteroids:         { title: 'ASTEROIDS',       src: 'games/asteroids/index.html',       available: true, viewport: 0.9 },
-      'missile-command': { title: 'MISSILE COMMAND', src: 'games/missile-command/index.html', available: true, w: 820,  h: 590 },
-      pinball:           { title: 'PINBALL',         src: 'https://pinball.flutter.dev/',     available: true, viewport: 0.9 },
-      pong:              { title: 'PONG',            src: 'games/pong/game.html',             available: true, viewport: 0.8 },
-      hextris:           { title: 'HEXTRIS',         src: 'games/hextris/index.html',         available: true, w: 700,  h: 700, fullscreen: true },
-      'air-hockey':      { title: 'AIR HOCKEY',      src: 'games/air-hockey/index.html',      available: true, viewport: 0.9 },
-      'space-invaders':  { title: 'SPACE INVADERS',  src: 'games/space-invaders/index.html',  available: true, w: 640,  h: 460 },
+      asteroids:         { title: 'ASTEROIDS',       src: '/arcade/games/asteroids/index.html',       available: true, viewport: 0.9 },
+      'missile-command': { title: 'MISSILE COMMAND', src: '/arcade/games/missile-command/index.html', available: true, w: 820,  h: 590 },
+      pinball:           { title: 'PINBALL',         src: 'https://pinball.flutter.dev/',             available: true, viewport: 0.9 },
+      pong:              { title: 'PONG',            src: '/arcade/games/pong/game.html',             available: true, viewport: 0.8 },
+      hextris:           { title: 'HEXTRIS',         src: '/arcade/games/hextris/index.html',         available: true, w: 700,  h: 700, fullscreen: true },
+      'air-hockey':      { title: 'AIR HOCKEY',      src: '/arcade/games/air-hockey/index.html',      available: true, viewport: 0.9 },
+      'space-invaders':  { title: 'SPACE INVADERS',  src: '/arcade/games/space-invaders/index.html',  available: true, w: 640,  h: 460 },
     };
     let selected = 'asteroids';
     const controls = {
@@ -1160,13 +1231,126 @@
 
     // ── Back to landing page ───────────────────────────────────────
     function navToHome() {
-      document.body.style.transition = 'opacity 0.5s ease';
+      document.body.style.transition = 'opacity 0.9s ease';
       document.body.style.opacity = '0';
-      setTimeout(function() { window.location.href = '../landingpage/index.html'; }, 500);
+      setTimeout(function() { window.location.href = '/'; }, 900);
     }
     document.getElementById('back-btn').addEventListener('click', navToHome);
     document.getElementById('find-diva-btn').addEventListener('click', navToHome);
   </script>
+
+
+<script>
+// ── Header smoke — WebGL canvas ──────────────────────────────────────────────
+(function() {
+  const sc = document.getElementById('arcade-smoke');
+  sc.width  = Math.round(sc.offsetWidth  * devicePixelRatio) || 1200;
+  sc.height = Math.round(sc.offsetHeight * devicePixelRatio) || 1300;
+
+  const sg = sc.getContext('webgl', { alpha: true, premultipliedAlpha: false });
+  if (!sg) return;
+
+  sg.enable(sg.BLEND);
+  sg.blendFunc(sg.SRC_ALPHA, sg.ONE_MINUS_SRC_ALPHA);
+  sg.clearColor(0, 0, 0, 0);
+  sg.viewport(0, 0, sc.width, sc.height);
+
+  // Smoke params — tweak live via window.SMOKE in browser console
+  // blendMode: change canvas mix-blend-mode — try 'normal' | 'screen' | 'multiply' | 'overlay'
+  window.SMOKE = {
+    intensity : 0.95,
+    power     : 0.50,
+    radius    : 0.40,
+    speed     : 0.07,
+    warp      : 5.5,
+    blendMode : 'screen',
+  };
+
+  const VERT = `attribute vec2 a_pos; void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }`;
+  const FRAG = `
+    precision mediump float;
+    uniform float u_time, u_intensity, u_power, u_radius, u_warp, u_speed;
+    uniform vec2  u_res;
+    vec2 _h2(vec2 p) {
+      p = vec2(dot(p, vec2(127.1,311.7)), dot(p, vec2(269.5,183.3)));
+      return -1.0 + 2.0 * fract(sin(p) * 43758.5453123);
+    }
+    float _n(vec2 p) {
+      vec2 i=floor(p), f=fract(p), u=f*f*(3.0-2.0*f);
+      return mix(mix(dot(_h2(i),f),dot(_h2(i+vec2(1,0)),f-vec2(1,0)),u.x),
+                 mix(dot(_h2(i+vec2(0,1)),f-vec2(0,1)),dot(_h2(i+vec2(1,1)),f-vec2(1,1)),u.x),u.y);
+    }
+    float _fbm(vec2 p) {
+      float v=0.0, a=0.5;
+      for(int i=0;i<5;i++){v+=a*_n(p);p=p*2.1+vec2(1.7,9.2);a*=0.5;}
+      return v;
+    }
+    void main() {
+      vec2 uv = gl_FragCoord.xy / u_res;
+      // Center on logo — approx (85px, 56px) in a 600×650 fixed canvas
+      vec2 p  = uv - vec2(0.14, 0.91);
+      float aspect = u_res.x / u_res.y;
+      p.x *= aspect;
+      float t = u_time * u_speed;
+      float r = length(p);
+      vec2 q = vec2(_fbm(p*1.8+vec2(t, t*0.6)), _fbm(p*1.8+vec2(t*0.7,-t*0.5)+vec2(5.2,1.3)));
+      vec2 r2= vec2(_fbm(p*3.0+u_warp*q+vec2(1.7,9.2)+t*0.12), _fbm(p*3.0+u_warp*q+vec2(8.3,2.8)-t*0.10));
+      float density = _fbm(p*2.2+3.0*r2+t*0.08)*0.5+0.5;
+      float envelope = smoothstep(u_radius, 0.02, r);
+      float smoke = envelope * density;
+      smoke *= 0.80 + 0.20 * smoothstep(0.18, -0.22, p.y);
+      smoke = pow(clamp(smoke, 0.0, 1.0), u_power);
+      gl_FragColor = vec4(0.98, 0.97, 0.96, clamp(smoke * u_intensity, 0.0, 1.0));
+    }
+  `;
+
+  function _comp(type, src) {
+    const s = sg.createShader(type);
+    sg.shaderSource(s, src); sg.compileShader(s);
+    if (!sg.getShaderParameter(s, sg.COMPILE_STATUS)) console.warn(sg.getShaderInfoLog(s));
+    return s;
+  }
+  const prog = sg.createProgram();
+  sg.attachShader(prog, _comp(sg.VERTEX_SHADER, VERT));
+  sg.attachShader(prog, _comp(sg.FRAGMENT_SHADER, FRAG));
+  sg.linkProgram(prog);
+
+  const buf = sg.createBuffer();
+  sg.bindBuffer(sg.ARRAY_BUFFER, buf);
+  sg.bufferData(sg.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,1,1]), sg.STATIC_DRAW);
+
+  const aPos  = sg.getAttribLocation(prog,  'a_pos');
+  const uTime = sg.getUniformLocation(prog, 'u_time');
+  const uRes  = sg.getUniformLocation(prog, 'u_res');
+  const uSpd  = sg.getUniformLocation(prog, 'u_speed');
+  const uInt  = sg.getUniformLocation(prog, 'u_intensity');
+  const uPow  = sg.getUniformLocation(prog, 'u_power');
+  const uRad  = sg.getUniformLocation(prog, 'u_radius');
+  const uWrp  = sg.getUniformLocation(prog, 'u_warp');
+  const t0    = performance.now();
+
+  function frame() {
+    const S = window.SMOKE;
+    // Live blend mode — change window.SMOKE.blendMode in console to test
+    if (sc.style.mixBlendMode !== S.blendMode) sc.style.mixBlendMode = S.blendMode;
+    sg.clear(sg.COLOR_BUFFER_BIT);
+    sg.useProgram(prog);
+    sg.bindBuffer(sg.ARRAY_BUFFER, buf);
+    sg.enableVertexAttribArray(aPos);
+    sg.vertexAttribPointer(aPos, 2, sg.FLOAT, false, 0, 0);
+    sg.uniform1f(uTime, (performance.now() - t0) / 1000);
+    sg.uniform2f(uRes,  sc.width, sc.height);
+    sg.uniform1f(uSpd,  S.speed);
+    sg.uniform1f(uInt,  S.intensity);
+    sg.uniform1f(uPow,  S.power);
+    sg.uniform1f(uRad,  S.radius);
+    sg.uniform1f(uWrp,  S.warp);
+    sg.drawArrays(sg.TRIANGLE_STRIP, 0, 4);
+    requestAnimationFrame(frame);
+  }
+  frame();
+})();
+</script>
 
 </body>
 </html>

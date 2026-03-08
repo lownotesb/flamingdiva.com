@@ -81,6 +81,7 @@
 	height: 580px;
 	z-index: 1;
 	pointer-events: none;
+	mix-blend-mode: normal; /* try: screen | multiply | overlay — or set window.SMOKE.blendMode in console */
 	opacity: 0;
 	animation: fadeIn 1.4s ease forwards 0.8s;
 }
@@ -146,7 +147,7 @@
 </head>
 <body>
 
-<script src="../shared/plasma-bg.js"></script>
+<script src="../shared/bg-shader.js"></script>
 
 <div class="hero hero-content-wrap">
   
@@ -193,7 +194,7 @@
 
   <div class="cta-row">
     <button class="btn-shop">Shop Collection</button>
-    <button class="btn-arcade" id="arcade-btn">Arcade</button>
+    <button class="btn-arcade" id="arcade-btn">Diva's Game Room</button>
     <div class="explore-row">
       <div class="explore-line"></div>
       <span class="explore-label">Explore</span>
@@ -231,7 +232,7 @@
 </div>
 
 <script>
-// ── Scale hero to fit viewport (mirrors pong game scaleGame pattern) ──────
+// ── Scale hero to fit viewport  ──────
 function scaleHero() {
   var scale = Math.min(window.innerWidth / 1440, window.innerHeight / 900);
   document.querySelector('.hero').style.transform = 'scale(' + scale + ')';
@@ -243,7 +244,7 @@ window.addEventListener('resize', scaleHero);
 document.getElementById('arcade-btn').addEventListener('click', function() {
   document.querySelector('.hero-content-wrap').classList.add('fade-out');
   setTimeout(function() {
-    window.location.href = '../arcade/arcade.html';
+    window.location.href = '/divas-game-room/';
   }, 600);
 });
 
@@ -275,6 +276,7 @@ document.getElementById('arcade-btn').addEventListener('click', function() {
     radius    : 0.55,   // envelope size — higher = wider smoke (try 0.5–1.0)
     speed     : 0.07,   // animation speed (try 0.03–0.20)
     warp      : 5.5,    // domain warp strength — higher = more swirling (try 1.0–6.0)
+    blendMode : 'normal', // try: 'screen' | 'multiply' | 'overlay' — live in console
   };
 
   const SMOKE_FRAG = `
@@ -367,12 +369,13 @@ document.getElementById('arcade-btn').addEventListener('click', function() {
   const smStart     = performance.now();
 
   function smokeFrame() {
+    const S = window.SMOKE;
+    if (sc.style.mixBlendMode !== S.blendMode) sc.style.mixBlendMode = S.blendMode;
     sg.clear(sg.COLOR_BUFFER_BIT);
     sg.useProgram(smProg);
     sg.bindBuffer(sg.ARRAY_BUFFER, smBuf);
     sg.enableVertexAttribArray(smPos);
     sg.vertexAttribPointer(smPos, 2, sg.FLOAT, false, 0, 0);
-    const S = window.SMOKE;
     sg.uniform1f(smTime,      (performance.now() - smStart) / 1000);
     sg.uniform2f(smRes,       sc.width, sc.height);
     sg.uniform1f(smSpeed,     S.speed);

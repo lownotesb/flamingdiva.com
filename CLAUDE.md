@@ -6,12 +6,33 @@ E-commerce site for Diva, a fashion artist selling one-of-a-kind handcrafted pie
 Full brief: `/mnt/devdrive/projects/flamingdiva.com/flaming-diva-implementation-brief.md`
 
 ## Local Dev Environment
-- **WordPress:** http://localhost:8090/wp-admin
+- **Landing page:** http://localhost:8090/
+- **WordPress / WooCommerce:** http://localhost:8090/shop/
+- **WP Admin:** http://localhost:8090/shop/wp-admin/
 - **phpMyAdmin:** http://localhost:8091 (root / fdrootpass)
 - **Start Docker:** `docker compose up -d` (from this folder)
 - **DB:** MySQL 8, db=flamingdiva, user=fduser, pass=fdpass, prefix=fd_
-- **WP files:** `./wordpress/`
+- **WP files:** `./shop/` (was `./wordpress/`, renamed)
 - Use `docker compose` (v2), NOT `docker-compose` (v1 has bug with Docker Engine 28)
+
+## Server Architecture (Docker Compose)
+- **nginx** (port 8090) — reverse proxy / static file server
+  - `/` → serves `./landingpage/` static files
+  - `/shared/` → serves `./shared/` static files (bg-shader.js etc.)
+  - `/arcade/` → serves `./arcade/` static files
+  - `/shop/` → proxies to WordPress container (internal port 80)
+  - Bare WP paths (`/wp-admin/`, `/wp-login.php`, etc.) → 301 redirect to `/shop/` equivalent
+- **wordpress** container — no external port, internal only
+- **mysql** container — internal only
+- **phpmyadmin** (port 8091) — DB admin UI
+- Config: `./config/nginx/default.conf`
+- **IMPORTANT:** After editing `default.conf`, nginx needs a FULL container restart to pick up changes (bind mount has inode caching issue with `nginx -s reload`):
+  `docker compose restart nginx`
+
+## WordPress Config Notes
+- WP_HOME and WP_SITEURL set to `http://localhost:8090/shop` via WORDPRESS_CONFIG_EXTRA in docker-compose.yml
+- wp-cli installed in WP container: `docker exec flamingdiva_wp wp <command> --allow-root`
+- To update DB URLs directly: `docker exec flamingdiva_db mysql -uroot -pfdrootpass flamingdiva -e "..."`
 
 ## Installed Plugins
 - Oxygen Builder 6 + Breakdance Elements for Oxygen
@@ -63,12 +84,22 @@ Diva photographs on ghost mannequin → standardize via OutfitChanger.com → up
 ## VIP Membership
 Auto-enrolled on first purchase. Physical welcome package: lanyard, Divarita poker chips, gift bag, welcome card. Lifestyle perks: party invites, concerts, bus trips, custom commission priority.
 
+## Landing Page (`./landingpage/`)
+- Fully built static landing page with WebGL shader background (`./shared/bg-shader.js`)
+- Responsive via `transform: scale()` JS approach (no CSS breakpoints) — scales 1440×900 design to any viewport
+- Shader label hover triggers screensaver dissolve (5s fade to black), click anywhere to restore (15s fade in)
+- Idle 2 min → auto-screensaver
+- 6 shader presets: Plasma (default), Lava, Aurora, Acid, Trip, Pane — persisted in localStorage
+- Shared with arcade page: `./shared/bg-shader.js`
+- GitHub Pages: https://lownotesb.github.io/flamingdiva.com/ (redirects to /landingpage/)
+
 ## Status (as of March 2026)
-- WordPress + WooCommerce installed and running locally
-- Oxygen Builder 6 installed
+- Landing page: complete and live on GitHub Pages
+- nginx reverse proxy: set up and working
+- WordPress + WooCommerce: installed and running locally at /shop/
+- Oxygen Builder 6 installed, theme build not yet started
+- WooCommerce setup: pages exist (Cart, Checkout, My Account, Shop), wizard not fully run
 - Logo redesign pending
 - Client developing product photography assets
-- WooCommerce setup wizard not yet run
-- Oxygen theme build not yet started
 - No hosting arranged (local dev only)
 - Old abandoned site preserved at `/mnt/devdrive/projects/flamingdiva.com/flamingdiva-old/`
